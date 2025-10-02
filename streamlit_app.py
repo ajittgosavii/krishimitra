@@ -1164,12 +1164,13 @@ def send_whatsapp_notification(mobile, message):
 # ====================
 
 def fetch_agmarknet_prices(state, district, commodity):
-    """Fetch from Agmarknet"""
+    """Fetch from Agmarknet - with debugging"""
     try:
+        # Try to get API key from secrets
         try:
             api_key = st.secrets["api_keys"]["data_gov_in"]
         except:
-            api_key = "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b"
+            return None, "API key not found in secrets"
             
         url = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
         
@@ -1184,13 +1185,18 @@ def fetch_agmarknet_prices(state, district, commodity):
         
         response = requests.get(url, params=params, timeout=10)
         
+        # Return status and response for debugging
         if response.status_code == 200:
             data = response.json()
             if 'records' in data and len(data['records']) > 0:
-                return pd.DataFrame(data['records'])
-        return None
-    except:
-        return None
+                return pd.DataFrame(data['records']), f"Success: {len(data['records'])} records"
+            else:
+                return None, f"No records found. Response keys: {list(data.keys())}"
+        else:
+            return None, f"HTTP {response.status_code}: {response.text[:200]}"
+        
+    except Exception as e:
+        return None, f"Error: {str(e)}"
 
 def fetch_weather_data(district, tehsil):
     """Fetch weather"""
@@ -1723,7 +1729,34 @@ def show_live_market_prices():
     """Market prices - FIXED"""
     st.markdown("### 📊 Live Market Prices / थेट बाजारभाव")
     
-    user = st.session_state.user_data  # FIXED
+    user = st.session_state.user_data
+    
+    # Check if API key is configured
+    api_key_configured = False
+    try:
+        if "api_keys" in st.secrets and "data_gov_in" in st.secrets["api_keys"]:
+            api_key_configured = True
+    except:
+        pass
+    
+    if not api_key_configured:
+        st.warning("⚠️ **API Key Not Configured**")
+        st.info("""
+        **To get live market prices:**
+        
+        1. Register at https://data.gov.in/
+        2. Get your API key from API Console
+        3. Add to Streamlit Secrets:
+        ```
+        [api_keys]
+        data_gov_in = "YOUR_API_KEY"
+        ```
+        
+        **Alternative Sources:**
+        - eNAM Portal: https://www.enam.gov.in/
+        - Agmarknet: https://agmarknet.gov.in/
+        - Call Helpline: 1800-270-0224
+        """)
     
     col1, col2 = st.columns(2)
     
@@ -1735,7 +1768,17 @@ def show_live_market_prices():
     
     if st.button("Fetch Prices / भाव आणा", type="primary", key="market_price_fetch"):
         with st.spinner("Fetching from Agmarknet..."):
-            data = fetch_agmarknet_prices("Maharashtra", user['district'], commodity)
+            data, debug_msg = fetch_agmarknet_prices("Maharashtra", user['district'], commodity)
+            
+            # Show debug information
+            with st.expander("🔍 API Debug Information"):
+                st.code(f"""
+API Endpoint: https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070
+State: Maharashtra
+District: {user['district']}
+Commodity: {commodity}
+Debug Message: {debug_msg}
+                """)
             
             if data is not None and len(data) > 0:
                 st.success("✅ Live Government Data")
@@ -1756,12 +1799,49 @@ def show_live_market_prices():
                 except:
                     st.dataframe(data.head(10))
             else:
-                st.warning("Live data unavailable. Showing sample trend:")
+                st.warning("⚠️ Live data unavailable. Showing sample trend:")
+                
+                # Show why data is unavailable
+                st.error(f"**Reason:** {debug_msg}")
+                
+                st.info("""
+                **Possible Issues:**
+                - API key might be invalid or expired
+                - Commodity name spelling doesn't match API database
+                - No recent data available for this district/commodity
+                - API rate limits reached
+                
+                **Try:**
+                - Check commodity spelling (use "Sugarcane" not "Sugar Cane")
+                - Try a different commodity
+                - Wait a few minutes and try again
+                - Visit https://agmarknet.gov.in/ directly
+                """)
+                
+                # Show crop price info from database
+                crop_info = CROP_DATABASE[commodity]
+                st.markdown(f"**Expected Market Price Range:** {crop_info['market_price_range']}")
+                
                 sample_data = generate_sample_prices(commodity)
                 
                 fig = px.line(sample_data, x='Date', y='Price (₹/quintal)',
-                             title=f'{commodity} Price Trend')
+                             title=f'{commodity} Price Trend (Sample Data)')
                 st.plotly_chart(fig, use_container_width=True)
+                
+                st.info("""
+                **📱 Get Real-Time Prices:**
+                
+                - **eNAM App**: Download from Play Store/App Store
+                - **Agmarknet Website**: https://agmarknet.gov.in/
+                - **SMS Service**: Send SMS to get prices
+                - **Toll-Free**: 1800-270-0224
+                """)
+                
+                # Show nearest mandis
+                st.markdown("### 🪙 Nearest Markets")
+                mandis = get_nearest_mandis(user['district'])
+                for mandi in mandis[:3]:
+                    st.markdown(f"- 📍 {mandi}")
 
 def show_best_practices():
     """Best practices"""
