@@ -1193,39 +1193,46 @@ def fetch_agmarknet_prices(state, district, commodity):
             
         url = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
         
+        # Try fetching without filters first to see if API has any data
         params = {
             "api-key": api_key,
             "format": "json",
-            "filters[state]": state,
-            "filters[commodity]": agmarknet_commodity,
-            "limit": 50
+            "limit": 100
         }
         
-        # Try without district filter first, as district names might not match exactly
         response = requests.get(url, params=params, timeout=10)
         
-        # Return status and response for debugging
         if response.status_code == 200:
             data = response.json()
             if 'records' in data and len(data['records']) > 0:
-                # Filter by district in the dataframe
                 df = pd.DataFrame(data['records'])
                 
-                # Try to filter by district (case-insensitive)
-                if 'district' in df.columns:
-                    district_matches = df[df['district'].str.lower().str.contains(district.lower(), na=False)]
-                    if len(district_matches) > 0:
-                        return district_matches, f"Success: {len(district_matches)} records for {district}"
-                    else:
-                        # Return all Maharashtra records if no exact district match
-                        return df, f"Success: {len(df)} records (all Maharashtra, no exact district match)"
+                # Try to filter by state, district, and commodity
+                filtered_df = df.copy()
+                
+                if 'state' in df.columns:
+                    filtered_df = filtered_df[filtered_df['state'].str.contains(state, case=False, na=False)]
+                
+                if 'district' in df.columns and len(filtered_df) > 0:
+                    district_filtered = filtered_df[filtered_df['district'].str.contains(district, case=False, na=False)]
+                    if len(district_filtered) > 0:
+                        filtered_df = district_filtered
+                
+                if 'commodity' in df.columns and len(filtered_df) > 0:
+                    commodity_filtered = filtered_df[filtered_df['commodity'].str.contains(agmarknet_commodity, case=False, na=False)]
+                    if len(commodity_filtered) > 0:
+                        filtered_df = commodity_filtered
+                
+                if len(filtered_df) > 0:
+                    return filtered_df.head(20), f"Success: {len(filtered_df)} records found"
                 else:
-                    return df, f"Success: {len(df)} records"
+                    # Show what's actually in the API
+                    available_commodities = df['commodity'].unique()[:10] if 'commodity' in df.columns else []
+                    return None, f"No match found. Available commodities in API: {', '.join(map(str, available_commodities))}"
             else:
-                # Show what commodities might be available
-                return None, f"No records for '{agmarknet_commodity}'. Try: Onion, Tomato, Potato, or Wheat"
+                return None, "API has no data. The data.gov.in dataset may be empty or outdated."
         else:
-            return None, f"HTTP {response.status_code}: {response.text[:200]}"
+            return None, f"HTTP {response.status_code}. API key may be invalid."
         
     except Exception as e:
         return None, f"Error: {str(e)}"
