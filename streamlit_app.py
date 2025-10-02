@@ -1323,28 +1323,52 @@ def show_auth_page():
             new_password = st.text_input("Password (min 6 chars)", type="password", key="reg_pass")
             full_name = st.text_input("Full Name / पूर्ण नाव", key="reg_name")
             mobile = st.text_input("Mobile (10 digits)", key="reg_mobile")
-            user_type = st.selectbox("I am a / मी आहे", ["Farmer / शेतकरी", "Buyer/Trader / खरेदीदार", "Transport Provider / वाहतूक"], key="reg_type")
         
         with col2:
             email = st.text_input("Email (Optional)", key="reg_email")
-            district = st.selectbox("District / जिल्हा", list(MAHARASHTRA_LOCATIONS.keys()), key="reg_dist")
-            
-            tehsil = None
-            village = None
-            
-            if district:
-                tehsils = list(MAHARASHTRA_LOCATIONS[district]["tehsils"].keys())
-                tehsil = st.selectbox("Tehsil / तालुका", tehsils, key="reg_teh")
-                
-                if tehsil:
-                    villages = MAHARASHTRA_LOCATIONS[district]["tehsils"][tehsil]
-                    village = st.selectbox("Village / गाव", villages, key="reg_vil")
-            
+            user_type = st.selectbox("I am a / मी आहे", ["Farmer / शेतकरी", "Buyer/Trader / खरेदीदार", "Transport Provider / वाहतूक"], key="reg_type")
             farm_size = st.number_input("Farm Size (Acres)", min_value=0.1, value=1.0, step=0.5, key="reg_size")
         
-        if st.button("Register / नोंदणी करा", type="primary"):
-            if not all([new_username, new_password, full_name, mobile, district, tehsil, village]):
+        st.markdown("---")
+        st.markdown("### 📍 Location Details / स्थान तपशील")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            district = st.selectbox("District / जिल्हा", 
+                                   ["Select District"] + list(MAHARASHTRA_LOCATIONS.keys()), 
+                                   key="reg_dist")
+        
+        with col2:
+            tehsil = None
+            if district and district != "Select District":
+                tehsils = list(MAHARASHTRA_LOCATIONS[district]["tehsils"].keys())
+                tehsil = st.selectbox("Tehsil / तालुका", 
+                                     ["Select Tehsil"] + tehsils, 
+                                     key="reg_teh")
+            else:
+                st.selectbox("Tehsil / तालुका", ["First select district"], disabled=True, key="reg_teh_disabled")
+        
+        with col3:
+            village = None
+            if district and district != "Select District" and tehsil and tehsil != "Select Tehsil":
+                villages = MAHARASHTRA_LOCATIONS[district]["tehsils"][tehsil]
+                village = st.selectbox("Village / गाव", 
+                                      ["Select Village"] + villages, 
+                                      key="reg_vil")
+            else:
+                st.selectbox("Village / गाव", ["First select tehsil"], disabled=True, key="reg_vil_disabled")
+        
+        if st.button("Register / नोंदणी करा", type="primary", use_container_width=True, key="reg_submit_btn"):
+            # Validation
+            if not all([new_username, new_password, full_name, mobile]):
                 st.error("Please fill all required fields / सर्व माहिती भरा")
+            elif district == "Select District":
+                st.error("Please select a district / कृपया जिल्हा निवडा")
+            elif not tehsil or tehsil == "Select Tehsil":
+                st.error("Please select a tehsil / कृपया तालुका निवडा")
+            elif not village or village == "Select Village":
+                st.error("Please select a village / कृपया गाव निवडा")
             elif len(new_password) < 6:
                 st.error("Password must be at least 6 characters")
             elif not mobile.isdigit() or len(mobile) != 10:
@@ -1355,6 +1379,7 @@ def show_auth_page():
                                              email, district, tehsil, village, farm_size, user_type_clean)
                 if success:
                     st.success("✅ Account created successfully! Please login")
+                    st.balloons()
                 else:
                     st.error(f"Error: {result}")
 
