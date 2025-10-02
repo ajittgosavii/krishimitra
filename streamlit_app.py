@@ -1188,8 +1188,6 @@ def show_main_app():
                 "📖 Complete Crop Guide",
                 "💰 Profit Calculator",
                 "🦠 Disease Diagnosis",
-                "🛒 Marketplace",
-                "🛍️ My Listings",
                 "📱 Notifications",
                 "📊 My Activity"
             ]
@@ -1197,8 +1195,6 @@ def show_main_app():
             pages = [
                 "🏠 Dashboard",
                 "🤖 AI Assistant",
-                "🛒 Marketplace",
-                "💼 My Bids",
                 "📊 Market Prices",
                 "📱 Notifications"
             ]
@@ -1235,12 +1231,6 @@ def show_main_app():
             show_profit_calculator()
         elif page == "🦠 Disease Diagnosis":
             show_ai_disease_diagnosis()
-        elif page == "🛒 Marketplace":
-            show_marketplace()
-        elif page == "🛍️ My Listings":
-            show_my_listings()
-        elif page == "💼 My Bids":
-            show_my_bids()
         elif page == "📱 Notifications":
             show_notifications()
         elif page == "📊 My Activity":
@@ -1262,21 +1252,14 @@ def show_dashboard():
     st.markdown(f"### 🏠 Welcome, {user['full_name']}!")
     
     # Metrics
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Your Farm", f"{user['farm_size']} acres", "🌾")
     with col2:
         activities = get_user_activities(user['id'], limit=1000)
         st.metric("Activities", len(activities), "📊")
     with col3:
-        st.metric("District", user['district'], "📍")
-    with col4:
-        conn = sqlite3.connect('krishimitra.db')
-        c = conn.cursor()
-        c.execute("SELECT COUNT(*) FROM marketplace_listings WHERE seller_id=? AND status='Active'", (user['id'],))
-        listings = c.fetchone()[0]
-        conn.close()
-        st.metric("Listings", listings, "🛒")
+        st.metric("Location", f"{user['tehsil']}, {user['district']}", "📍")
     
     # Quick actions
     st.markdown("### ⚡ Quick Actions")
@@ -1294,8 +1277,8 @@ def show_dashboard():
             st.session_state.current_page = "📊 Market Prices"
             st.rerun()
     with col4:
-        if st.button("🛒 Marketplace", use_container_width=True):
-            st.session_state.current_page = "🛒 Marketplace"
+        if st.button("📖 Crop Guide", use_container_width=True):
+            st.session_state.current_page = "📖 Complete Crop Guide"
             st.rerun()
     
     # Recent activities
@@ -1305,7 +1288,7 @@ def show_dashboard():
         for act in recent:
             st.markdown(f"- **{act[0]}**: {act[1]} ({act[2]} acres) - {act[4]}")
     else:
-        st.info("No activities yet")
+        st.info("No activities yet. Start using the calculators and tools!")
 
 def show_ai_assistant():
     """AI Chat Assistant"""
