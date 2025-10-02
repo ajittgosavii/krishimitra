@@ -1822,9 +1822,24 @@ def show_live_market_prices():
     with col2:
         st.info(f"📍 {user['district']} District")
     
+    # Add Maharashtra only filter
+    only_maharashtra = st.checkbox("Show only Maharashtra data", value=True, key="maha_only_filter")
+    
     if st.button("Fetch Prices / भाव आणा", type="primary", key="market_price_fetch"):
         with st.spinner("Fetching from Agmarknet..."):
             data, debug_msg = fetch_agmarknet_prices("Maharashtra", user['district'], commodity)
+            
+            # Filter for Maharashtra only if checkbox is selected
+            if data is not None and only_maharashtra:
+                if 'state' in data.columns:
+                    maha_data = data[data['state'].str.contains('Maharashtra', case=False, na=False)]
+                    if len(maha_data) == 0:
+                        st.warning(f"⚠️ No Maharashtra data available for {commodity}")
+                        st.info(f"API has data from other states. Uncheck 'Show only Maharashtra data' to view all available prices.")
+                        data = None
+                    else:
+                        data = maha_data
+                        debug_msg = f"Filtered to {len(maha_data)} Maharashtra records"
             
             # Show debug information
             with st.expander("🔍 API Debug Information"):
