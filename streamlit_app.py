@@ -150,6 +150,25 @@ CEDA_COMMODITY_MAP = {
     "Sugarcane": ["sugarcane", "sugar cane"]
 }
 
+def fetch_agmarknet_prices(commodity, state="Maharashtra"):
+    """Fetch prices from Government of India AGMARKNET"""
+    try:
+        # AGMARKNET data portal
+        # Note: This is a simplified version. Real implementation would need API key
+        base_url = "https://agmarknet.gov.in"
+        
+        st.info("Note: AGMARKNET requires authentication. Showing sample structure.")
+        
+        # In production, you would:
+        # 1. Register at https://agmarknet.gov.in
+        # 2. Get API credentials
+        # 3. Use their official API endpoints
+        
+        return None, "AGMARKNET integration requires API credentials"
+        
+    except Exception as e:
+        return None, f"Error accessing AGMARKNET: {str(e)}"
+
 def fetch_ceda_prices(commodity, state="Maharashtra", district=None):
     """Fetch agricultural prices from CEDA Ashoka University"""
     try:
@@ -158,48 +177,100 @@ def fetch_ceda_prices(commodity, state="Maharashtra", district=None):
             'User-Agent': 'KrishiMitra/1.0 (Educational; Non-commercial; Agricultural Price Research)',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         }
-        commodity_keywords = CEDA_COMMODITY_MAP.get(commodity, [commodity.lower()])
-        search_url = f"{CEDA_BASE_URL}/data/agricultural-prices"
-        response = requests.get(search_url, headers=headers, timeout=15)
         
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.content, 'html.parser')
-            price_data = []
-            tables = soup.find_all('table', class_=['price-table', 'data-table'])
-            for table in tables:
-                rows = table.find_all('tr')
-                for row in rows[1:]:
-                    cols = row.find_all('td')
-                    if len(cols) >= 4:
-                        item_name = cols[0].get_text(strip=True).lower()
-                        if any(keyword in item_name for keyword in commodity_keywords):
-                            try:
-                                price_data.append({
-                                    'commodity': cols[0].get_text(strip=True),
-                                    'market': cols[1].get_text(strip=True) if len(cols) > 1 else 'N/A',
-                                    'price': cols[2].get_text(strip=True) if len(cols) > 2 else 'N/A',
-                                    'date': cols[3].get_text(strip=True) if len(cols) > 3 else 'N/A',
-                                    'source': 'CEDA Ashoka University'
-                                })
-                            except:
-                                continue
-            if price_data:
-                df = pd.DataFrame(price_data)
-                return df, "Data retrieved from CEDA Ashoka University"
-            else:
-                return None, f"No price data found for {commodity} at CEDA"
-        elif response.status_code == 404:
-            return None, "CEDA endpoint not found. Service may have been updated."
-        elif response.status_code == 403:
-            return None, "Access restricted. Please verify CEDA's terms of use."
-        else:
-            return None, f"HTTP {response.status_code} from CEDA"
+        # Try multiple potential CEDA endpoints
+        potential_urls = [
+            f"{CEDA_BASE_URL}/data/agricultural-prices",
+            f"{CEDA_BASE_URL}/data/agriculture",
+            f"{CEDA_BASE_URL}/agriculture",
+        ]
+        
+        commodity_keywords = CEDA_COMMODITY_MAP.get(commodity, [commodity.lower()])
+        
+        for search_url in potential_urls:
+            try:
+                response = requests.get(search_url, headers=headers, timeout=15)
+                
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.content, 'html.parser')
+                    price_data = []
+                    
+                    # Look for various table structures
+                    tables = soup.find_all('table')
+                    
+                    for table in tables:
+                        rows = table.find_all('tr')
+                        if len(rows) > 1:  # Has header and data
+                            for row in rows[1:]:
+                                cols = row.find_all('td')
+                                if len(cols) >= 4:
+                                    item_name = cols[0].get_text(strip=True).lower()
+                                    if any(keyword in item_name for keyword in commodity_keywords):
+                                        try:
+                                            price_data.append({
+                                                'commodity': cols[0].get_text(strip=True),
+                                                'market': cols[1].get_text(strip=True) if len(cols) > 1 else 'N/A',
+                                                'price': cols[2].get_text(strip=True) if len(cols) > 2 else 'N/A',
+                                                'date': cols[3].get_text(strip=True) if len(cols) > 3 else 'N/A',
+                                                'source': 'CEDA Ashoka University'
+                                            })
+                                        except:
+                                            continue
+                    
+                    if price_data:
+                        df = pd.DataFrame(price_data)
+                        return df, "✅ Data retrieved from CEDA Ashoka University"
+            except:
+                continue
+        
+        return None, "CEDA data not accessible. The website structure may have changed or data is not publicly available."
+        
     except requests.Timeout:
         return None, "Request timeout. CEDA server may be slow or unavailable."
     except requests.ConnectionError:
         return None, "Connection error. Please check internet connectivity."
     except Exception as e:
         return None, f"Error accessing CEDA: {str(e)}"
+
+def generate_sample_prices(commodity, district):
+    """Generate realistic sample prices based on crop database and location"""
+    crop_info = CROP_DATABASE.get(commodity, {})
+    price_range = crop_info.get("market_price_range", "₹1000-2000/quintal")
+    
+    # Extract base prices
+    import re
+    prices = re.findall(r'\d+', price_range)
+    if len(prices) >= 2:
+        base_min = int(prices[0])
+        base_max = int(prices[1])
+    else:
+        base_min = 1000
+        base_max = 2000
+    
+    # Generate sample data for last 7 days
+    sample_data = []
+    mandis = get_nearest_mandis(district)
+    
+    for i in range(7):
+        date = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
+        for mandi in mandis[:3]:  # Top 3 mandis
+            # Add realistic variation
+            variation = 1 + (hash(f"{date}{mandi}") % 20 - 10) / 100
+            min_price = int(base_min * variation)
+            max_price = int(base_max * variation)
+            modal_price = int((min_price + max_price) / 2)
+            
+            sample_data.append({
+                'commodity': commodity,
+                'market': mandi,
+                'min_price': min_price,
+                'max_price': max_price,
+                'modal_price': modal_price,
+                'date': date,
+                'source': 'Estimated (Based on typical ranges)'
+            })
+    
+    return pd.DataFrame(sample_data)
 
 # Maharashtra Locations
 MAHARASHTRA_LOCATIONS = {
@@ -1921,12 +1992,12 @@ def show_live_market_prices():
                     # CEDA Attribution
                     st.markdown('<div class="info-card">', unsafe_allow_html=True)
                     st.markdown("""
-                    **Data Source:** Centre for Economic Data and Analysis (CEDA), Ashoka University
+                    **📊 Data Source:** Centre for Economic Data and Analysis (CEDA), Ashoka University
                     
                     CEDA provides economic data for research and non-commercial use. 
                     Learn more: https://ceda.ashoka.edu.in
                     
-                    **Usage Compliance:**
+                    **⚖️ Usage Compliance:**
                     - Non-commercial educational use
                     - Proper attribution provided
                     - Rate-limited respectful access
@@ -1934,7 +2005,43 @@ def show_live_market_prices():
                     st.markdown('</div>', unsafe_allow_html=True)
                 else:
                     st.warning(ceda_status)
-                    st.info("Showing typical price range from database")
+                    
+                    # Generate sample prices as fallback
+                    st.info("📊 Showing estimated market prices based on typical ranges")
+                    sample_df = generate_sample_prices(commodity, user['district'])
+                    
+                    st.markdown("#### Estimated Market Prices (Last 7 Days)")
+                    st.dataframe(sample_df, use_container_width=True)
+                    
+                    # Calculate and show statistics
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("Average Modal Price", f"₹{sample_df['modal_price'].mean():.0f}/quintal")
+                    with col2:
+                        st.metric("Typical Min", f"₹{sample_df['min_price'].mean():.0f}/quintal")
+                    with col3:
+                        st.metric("Typical Max", f"₹{sample_df['max_price'].mean():.0f}/quintal")
+                    
+                    # Price chart
+                    fig = px.line(sample_df, x='date', y=['min_price', 'modal_price', 'max_price'],
+                                 title=f"{commodity} Price Trends (Estimated)",
+                                 labels={'value': 'Price (₹/quintal)', 'date': 'Date'})
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                    st.markdown('<div class="alert-card">', unsafe_allow_html=True)
+                    st.markdown("""
+                    **⚠️ Note:** These are estimated prices based on typical market ranges.
+                    
+                    **For real-time prices:**
+                    - Visit your nearest APMC mandi
+                    - Call mandi offices (numbers below)
+                    - Check AGMARKNET: https://agmarknet.gov.in
+                    - Add manual prices in Tab 3 to help the community
+                    
+                    **Why estimates?** Real-time agricultural price APIs require authentication and 
+                    may have access restrictions. This app uses typical price ranges from agricultural databases.
+                    """)
+                    st.markdown('</div>', unsafe_allow_html=True)
         
         # Show database prices
         st.markdown("### Manual Market Prices (User Contributed)")
