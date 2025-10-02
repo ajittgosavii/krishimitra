@@ -1185,9 +1185,8 @@ def show_main_app():
                 "🤖 AI Assistant", 
                 "🌱 Seed Calculator",
                 "📊 Market Prices",
-                "🎯 Best Practices",
+                "📖 Complete Crop Guide",
                 "💰 Profit Calculator",
-                "📚 Crop Knowledge",
                 "🦠 Disease Diagnosis",
                 "🛒 Marketplace",
                 "🛍️ My Listings",
@@ -1230,12 +1229,10 @@ def show_main_app():
             show_seed_fertilizer_calculator()
         elif page == "📊 Market Prices":
             show_live_market_prices()
-        elif page == "🎯 Best Practices":
-            show_best_practices_enhanced()
+        elif page == "📖 Complete Crop Guide":
+            show_complete_crop_guide()
         elif page == "💰 Profit Calculator":
             show_profit_calculator()
-        elif page == "📚 Crop Knowledge":
-            show_knowledge_base()
         elif page == "🦠 Disease Diagnosis":
             show_ai_disease_diagnosis()
         elif page == "🛒 Marketplace":
