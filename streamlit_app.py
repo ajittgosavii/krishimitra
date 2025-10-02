@@ -1858,15 +1858,42 @@ def show_live_market_prices():
             - Geographic Coverage: District-level for all states
             """)
             
-            # Sample data to show format
+            # Sample data based on selected commodity
+            crop_info = CROP_DATABASE[commodity_ceda]
+            price_range = crop_info["market_price_range"].replace("₹", "").split("-")
+            try:
+                base_price = sum([float(p.split("/")[0]) for p in price_range]) / len(price_range)
+            except:
+                base_price = 2500
+            
+            # Generate sample data for selected crop
+            import random
+            random.seed(hash(commodity_ceda))  # Consistent random data for same crop
+            
             sample_data = pd.DataFrame({
                 'Month': ['09/2025', '08/2025', '07/2025', '06/2025'],
-                'Modal Price (₹)': [2587.38, 2587.93, 2528.40, 2506.49],
-                'Min Price (₹)': [2502.44, 2509.14, 2442.86, 2419.55],
-                'Max Price (₹)': [2653.36, 2645.56, 2600.61, 2575.83]
+                'Modal Price (₹)': [
+                    round(base_price + random.randint(-100, 100), 2),
+                    round(base_price + random.randint(-100, 100), 2),
+                    round(base_price + random.randint(-150, 50), 2),
+                    round(base_price + random.randint(-150, 50), 2)
+                ],
+                'Min Price (₹)': [
+                    round(base_price * 0.92 + random.randint(-50, 50), 2),
+                    round(base_price * 0.93 + random.randint(-50, 50), 2),
+                    round(base_price * 0.91 + random.randint(-50, 50), 2),
+                    round(base_price * 0.90 + random.randint(-50, 50), 2)
+                ],
+                'Max Price (₹)': [
+                    round(base_price * 1.08 + random.randint(-50, 50), 2),
+                    round(base_price * 1.09 + random.randint(-50, 50), 2),
+                    round(base_price * 1.07 + random.randint(-50, 50), 2),
+                    round(base_price * 1.08 + random.randint(-50, 50), 2)
+                ]
             })
             st.dataframe(sample_data, use_container_width=True)
-            st.caption("Example: Wheat prices (All India) - Source: CEDA Portal")
+            st.caption(f"Example: {commodity_ceda} prices (All India) - This is sample data format from CEDA Portal")
+            st.warning("⚠️ Note: These are example prices to show the data format. Visit CEDA portal for actual current prices.")
     
     with tab3:
         st.markdown("### 🌐 Government API (Agmarknet)")
