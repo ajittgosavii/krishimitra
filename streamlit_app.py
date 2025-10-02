@@ -1816,38 +1816,57 @@ def show_live_market_prices():
         
         commodity_ceda = st.selectbox("Select Commodity", list(CROP_DATABASE.keys()), key="ceda_commodity")
         
-        if st.button("🔍 Fetch from CEDA", type="primary", key="ceda_fetch"):
-            with st.spinner("Accessing CEDA Ashoka University database..."):
-                data, msg = fetch_ceda_prices(commodity_ceda, state="Maharashtra", district=user['district'])
-                
-                if data is not None and len(data) > 0:
-                    st.success("✅ Data Retrieved Successfully")
-                    st.markdown("### 📊 CEDA Price Data")
-                    st.dataframe(data, use_container_width=True)
-                    
-                    if 'price' in data.columns and 'date' in data.columns:
-                        try:
-                            data['price_numeric'] = pd.to_numeric(data['price'], errors='coerce')
-                            data_clean = data.dropna(subset=['price_numeric'])
-                            if len(data_clean) > 0:
-                                fig = px.line(data_clean, x='date', y='price_numeric', 
-                                            title=f'{commodity_ceda} Price Trend (CEDA Data)',
-                                            labels={'price_numeric': 'Price (₹)', 'date': 'Date'})
-                                st.plotly_chart(fig, use_container_width=True)
-                        except:
-                            pass
-                    
-                    st.markdown('<div class="ceda-attribution">', unsafe_allow_html=True)
-                    st.markdown("**Source:** Centre for Economic Data and Analysis (CEDA), Ashoka University")
-                    st.markdown("**License:** Non-commercial research and educational use")
-                    st.markdown('</div>', unsafe_allow_html=True)
-                else:
-                    st.warning(f"⚠️ {msg}")
-                    st.info("""
-                    **About CEDA:**
-                    CEDA at Ashoka University provides economic data including agricultural market prices.
-                    Visit: https://ceda.ashoka.edu.in for more information
-                    """)
+        st.info("ℹ️ CEDA provides data through an interactive web portal. Click below for access instructions.")
+        
+        if st.button("📊 View CEDA Access Guide", type="primary", key="ceda_fetch"):
+            data, instructions = fetch_ceda_prices(commodity_ceda, state="Maharashtra", district=user['district'])
+            
+            st.markdown(instructions)
+            
+            # Show direct link to CEDA portal
+            st.markdown("---")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.link_button("🌐 Open CEDA Portal", "https://ceda.ashoka.edu.in", use_container_width=True)
+            with col2:
+                st.link_button("📚 CEDA Documentation", "https://ceda.ashoka.edu.in/about", use_container_width=True)
+            
+            st.markdown("---")
+            st.markdown('<div class="ceda-attribution">', unsafe_allow_html=True)
+            st.markdown("""
+            **📊 Data Attribution:**
+            - Source: Centre for Economic Data and Analysis (CEDA), Ashoka University
+            - License: Non-commercial educational and research use
+            - Coverage: All India agricultural market data
+            - Updates: Monthly/Weekly (check portal for latest)
+            
+            **💡 Why Manual Access?**
+            CEDA uses a JavaScript-based interactive portal that requires manual interaction.
+            Automated scraping would violate their terms of service and technical architecture.
+            """)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Show example data structure
+            st.markdown("### 📋 Example CEDA Data Format")
+            st.info("""
+            **Available Data Points:**
+            - Modal Price (₹/quintal) - Most common trading price
+            - Min Price (₹/quintal) - Lowest trading price
+            - Max Price (₹/quintal) - Highest trading price
+            - Arrival Quantity (quintals) - Market arrival volumes
+            - Time Series: Monthly/Weekly trends
+            - Geographic Coverage: District-level for all states
+            """)
+            
+            # Sample data to show format
+            sample_data = pd.DataFrame({
+                'Month': ['09/2025', '08/2025', '07/2025', '06/2025'],
+                'Modal Price (₹)': [2587.38, 2587.93, 2528.40, 2506.49],
+                'Min Price (₹)': [2502.44, 2509.14, 2442.86, 2419.55],
+                'Max Price (₹)': [2653.36, 2645.56, 2600.61, 2575.83]
+            })
+            st.dataframe(sample_data, use_container_width=True)
+            st.caption("Example: Wheat prices (All India) - Source: CEDA Portal")
     
     with tab3:
         st.markdown("### 🌐 Government API (Agmarknet)")
