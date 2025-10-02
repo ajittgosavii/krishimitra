@@ -25,14 +25,11 @@ def get_anthropic_client():
     try:
         from anthropic import Anthropic
         
-        # Try both locations for the API key
         api_key = None
         try:
-            # First try root level
             api_key = st.secrets["ANTHROPIC_API_KEY"]
         except KeyError:
             try:
-                # Then try under api_keys section
                 api_key = st.secrets["api_keys"]["ANTHROPIC_API_KEY"]
             except KeyError:
                 st.error("Could not find ANTHROPIC_API_KEY in secrets. Check your secrets configuration.")
@@ -51,7 +48,7 @@ def get_anthropic_client():
         st.error(f"Error initializing AI: {str(e)}")
         return None
 
-# Custom CSS with improved styling
+# Custom CSS
 st.markdown("""
     <style>
     .main-header {
@@ -92,14 +89,6 @@ st.markdown("""
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0,0,0,0.12);
     }
-    .fertilizer-card {
-        background-color: #FFF3E0;
-        padding: 1.2rem;
-        border-radius: 10px;
-        border-left: 5px solid #FF9800;
-        margin: 0.8rem 0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-    }
     .ai-card {
         background-color: #E3F2FD;
         padding: 1.5rem;
@@ -108,35 +97,19 @@ st.markdown("""
         margin: 1rem 0;
         box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
-    .notification-card {
-        background-color: #F3E5F5;
-        padding: 1rem;
+    .alert-card {
+        background-color: #FFF3E0;
+        padding: 1.2rem;
         border-radius: 10px;
-        border-left: 5px solid #9C27B0;
-        margin: 0.5rem 0;
-    }
-    .marketplace-card {
-        background-color: #FFF8E1;
-        padding: 1.5rem;
-        border-radius: 12px;
-        border-left: 6px solid #FFA000;
-        margin: 1rem 0;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    .bid-card {
-        background-color: #E1F5FE;
-        padding: 1rem;
-        border-radius: 10px;
-        border-left: 5px solid #0288D1;
-        margin: 0.5rem 0;
-    }
-    .ceda-attribution {
-        background-color: #E8EAF6;
-        padding: 1rem;
-        border-radius: 8px;
-        border-left: 5px solid #3F51B5;
+        border-left: 5px solid #FF9800;
         margin: 0.8rem 0;
-        font-size: 0.95em;
+    }
+    .success-card {
+        background-color: #E8F5E9;
+        padding: 1.2rem;
+        border-radius: 10px;
+        border-left: 5px solid #4CAF50;
+        margin: 0.8rem 0;
     }
     .chat-message {
         padding: 1rem;
@@ -156,22 +129,10 @@ st.markdown("""
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
     }
-    .stButton>button {
-        border-radius: 8px;
-        font-weight: 500;
-        transition: all 0.3s;
-    }
-    .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
     </style>
     """, unsafe_allow_html=True)
 
-# ====================
-# CEDA INTEGRATION (Original)
-# ====================
-
+# CEDA Integration
 CEDA_BASE_URL = "https://ceda.ashoka.edu.in"
 
 CEDA_COMMODITY_MAP = {
@@ -224,7 +185,7 @@ def fetch_ceda_prices(commodity, state="Maharashtra", district=None):
                                 continue
             if price_data:
                 df = pd.DataFrame(price_data)
-                return df, "✅ Data retrieved from CEDA Ashoka University"
+                return df, "Data retrieved from CEDA Ashoka University"
             else:
                 return None, f"No price data found for {commodity} at CEDA"
         elif response.status_code == 404:
@@ -240,23 +201,7 @@ def fetch_ceda_prices(commodity, state="Maharashtra", district=None):
     except Exception as e:
         return None, f"Error accessing CEDA: {str(e)}"
 
-def get_ceda_attribution():
-    """Return proper CEDA attribution text"""
-    return """
-    📊 **Data Source:** Centre for Economic Data and Analysis (CEDA), Ashoka University
-    
-    CEDA provides economic data for research and non-commercial use. 
-    Learn more: https://ceda.ashoka.edu.in
-    
-    ⚖️ **Usage Compliance:**
-    - Non-commercial educational use
-    - Proper attribution provided
-    - Rate-limited respectful access
-    """
-
-# ====================
-# MAHARASHTRA LOCATIONS (Original - all 36 districts)
-# ====================
+# Maharashtra Locations
 MAHARASHTRA_LOCATIONS = {
     "Pune": {
         "tehsils": {
@@ -312,30 +257,6 @@ MAHARASHTRA_LOCATIONS = {
     "Ahmednagar": {"tehsils": {"Ahmednagar": ["Ahmednagar City", "Nagar", "Sangamner"]}},
     "Satara": {"tehsils": {"Satara": ["Satara City", "Karad", "Koregaon"]}},
     "Sangli": {"tehsils": {"Sangli": ["Sangli City", "Miraj", "Tasgaon"]}},
-    "Ratnagiri": {"tehsils": {"Ratnagiri": ["Ratnagiri City", "Mandangad", "Dapoli"]}},
-    "Sindhudurg": {"tehsils": {"Sindhudurg": ["Sindhudurg City", "Malwan", "Kudal"]}},
-    "Amravati": {"tehsils": {"Amravati": ["Amravati City", "Morshi", "Daryapur"]}},
-    "Akola": {"tehsils": {"Akola": ["Akola City", "Barshitakli", "Akot"]}},
-    "Washim": {"tehsils": {"Washim": ["Washim City", "Karanja", "Malegaon"]}},
-    "Buldhana": {"tehsils": {"Buldhana": ["Buldhana City", "Malkapur", "Chikhli"]}},
-    "Yavatmal": {"tehsils": {"Yavatmal": ["Yavatmal City", "Pusad", "Darwha"]}},
-    "Wardha": {"tehsils": {"Wardha": ["Wardha City", "Hinganghat", "Arvi"]}},
-    "Chandrapur": {"tehsils": {"Chandrapur": ["Chandrapur City", "Warora", "Ballarpur"]}},
-    "Gadchiroli": {"tehsils": {"Gadchiroli": ["Gadchiroli City", "Dhanora", "Chamorshi"]}},
-    "Gondia": {"tehsils": {"Gondia": ["Gondia City", "Tirora", "Goregaon"]}},
-    "Bhandara": {"tehsils": {"Bhandara": ["Bhandara City", "Tumsar", "Pauni"]}},
-    "Jalgaon": {"tehsils": {"Jalgaon": ["Jalgaon City", "Bhusawal", "Amalner"]}},
-    "Dhule": {"tehsils": {"Dhule": ["Dhule City", "Sakri", "Shirpur"]}},
-    "Nandurbar": {"tehsils": {"Nandurbar": ["Nandurbar City", "Shahada", "Taloda"]}},
-    "Osmanabad": {"tehsils": {"Osmanabad": ["Osmanabad City", "Tuljapur", "Bhum"]}},
-    "Latur": {"tehsils": {"Latur": ["Latur City", "Nilanga", "Ausa"]}},
-    "Beed": {"tehsils": {"Beed": ["Beed City", "Ambajogai", "Parli"]}},
-    "Parbhani": {"tehsils": {"Parbhani": ["Parbhani City", "Purna", "Pathri"]}},
-    "Jalna": {"tehsils": {"Jalna": ["Jalna City", "Bhokardan", "Ambad"]}},
-    "Hingoli": {"tehsils": {"Hingoli": ["Hingoli City", "Kalamnuri", "Sengaon"]}},
-    "Nanded": {"tehsils": {"Nanded": ["Nanded City", "Kinwat", "Hadgaon"]}},
-    "Palghar": {"tehsils": {"Palghar": ["Palghar City", "Vasai", "Virar"]}},
-    "Raigad": {"tehsils": {"Raigad": ["Alibag", "Panvel", "Karjat"]}}
 }
 
 # Initialize session state
@@ -346,13 +267,15 @@ if 'location_data' not in st.session_state:
 if 'notifications_enabled' not in st.session_state:
     st.session_state.notifications_enabled = False
 if 'current_page' not in st.session_state:
-    st.session_state.current_page = "🏠 Dashboard"
+    st.session_state.current_page = "Dashboard"
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
+if 'price_alerts' not in st.session_state:
+    st.session_state.price_alerts = []
+if 'crop_tracking' not in st.session_state:
+    st.session_state.crop_tracking = []
 
-# ====================
-# ENHANCED CROP DATABASE with detailed practices
-# ====================
+# Crop Database
 CROP_DATABASE = {
     "Rice": {
         "seed_rate_kg_per_acre": "10-12",
@@ -363,6 +286,13 @@ CROP_DATABASE = {
         "best_season": "Kharif (June-October)",
         "soil_type": "Clay loam, silt loam",
         "market_price_range": "₹2000-2800/quintal",
+        "critical_growth_stages": [
+            {"stage": "Germination", "days": "0-10", "water_need": "High", "nutrients": "Minimal"},
+            {"stage": "Tillering", "days": "15-40", "water_need": "Medium", "nutrients": "High N"},
+            {"stage": "Panicle Initiation", "days": "45-65", "water_need": "Critical", "nutrients": "Balanced NPK"},
+            {"stage": "Flowering", "days": "70-90", "water_need": "High", "nutrients": "Low N, High K"},
+            {"stage": "Grain Filling", "days": "95-120", "water_need": "Medium", "nutrients": "K only"}
+        ],
         "detailed_practices": {
             "land_preparation": [
                 "First plowing: Deep plowing to 20-25 cm depth after monsoon onset",
@@ -384,34 +314,6 @@ CROP_DATABASE = {
                 "Transplant at shallow depth (2-3 cm) for better tillering",
                 "Complete transplanting within 3-4 weeks for uniform maturity",
                 "Replant missing hills within 7 days"
-            ],
-            "water_management": [
-                "Maintain 5 cm water up to flowering stage",
-                "Drain water at panicle initiation for 3-4 days (increases tillers)",
-                "Keep field saturated (no standing water) during flowering",
-                "Drain field 10 days before harvesting",
-                "Total water requirement: 120-150 cm over crop duration"
-            ],
-            "weed_management": [
-                "First hand weeding at 20-25 days after transplanting",
-                "Second hand weeding at 40-45 days after transplanting",
-                "Use cono weeder for mechanical weeding (reduces labor by 50%)",
-                "Pre-emergence herbicide: Butachlor @ 2 liters/acre within 3 days",
-                "Post-emergence: 2,4-D @ 500ml/acre at 25-30 days"
-            ],
-            "pest_disease_control": [
-                "Stem borer: Use pheromone traps @ 5/acre from 30 DAT",
-                "Leaf folder: Spray Cartap hydrochloride @ 1.5g/liter",
-                "Brown plant hopper: Use Imidacloprid @ 0.5ml/liter at early stage",
-                "Blast disease: Apply Tricyclazole 75% WP @ 60g/acre at boot leaf stage",
-                "Sheath blight: Spray Hexaconazole @ 2ml/liter at tillering"
-            ],
-            "harvesting": [
-                "Harvest when 80-85% of grains turn golden yellow",
-                "Moisture content should be 20-22% at harvest",
-                "Cut panicles 15-20 cm below the ear head",
-                "Complete harvesting within 7-10 days after maturity",
-                "Thresh within 2-3 days to prevent grain damage"
             ]
         },
         "chemical_fertilizers": {
@@ -431,22 +333,9 @@ CROP_DATABASE = {
             "neem_cake_kg": "100",
             "green_manure": "Dhaincha or Sunhemp - 8-10 kg/acre",
             "biofertilizers": "Azospirillum + PSB @ 2 kg each per acre",
-            "application_schedule": [
-                "FYM: Apply 2-3 weeks before transplanting",
-                "Vermicompost: Mix in soil at final land preparation",
-                "Neem cake: Apply at transplanting as basal",
-                "Biofertilizers: Mix with seeds or apply to roots"
-            ]
         },
-        "methods": [
-            "System of Rice Intensification (SRI): Transplant 8-12 day old seedlings, one per hill, with 25x25cm spacing. Use rotary weeder. Can increase yield by 30-50%",
-            "Direct Seeded Rice (DSR): Drill seeds at 8-10 kg/acre, reduces water usage by 30%, labor saving method"
-        ],
-        "tips": [
-            "Maintain 2-5 cm water level during vegetative stage",
-            "Apply zinc sulfate at 10 kg/acre to prevent zinc deficiency",
-            "Use pheromone traps for stem borer management"
-        ]
+        "common_pests": ["Stem Borer", "Brown Plant Hopper", "Leaf Folder"],
+        "common_diseases": ["Blast Disease", "Sheath Blight", "Bacterial Leaf Blight"]
     },
     "Wheat": {
         "seed_rate_kg_per_acre": "40-50",
@@ -457,37 +346,13 @@ CROP_DATABASE = {
         "best_season": "Rabi (November-March)",
         "soil_type": "Loam to clay loam",
         "market_price_range": "₹2000-2400/quintal",
-        "detailed_practices": {
-            "land_preparation": [
-                "Deep plowing with soil turning plough to 20-25 cm",
-                "Two cross harrowings followed by planking for fine tilth",
-                "Level field properly for uniform irrigation",
-                "Incorporate crop residues 20-25 days before sowing",
-                "Apply well-decomposed FYM @ 10 tons/acre 3-4 weeks before sowing"
-            ],
-            "sowing": [
-                "Sow within first fortnight of November for optimal yields",
-                "Use seed drill for uniform depth (4-5 cm) and spacing",
-                "Row to row spacing: 20-23 cm for normal varieties",
-                "Seed treatment: Vitavax @ 2.5g/kg or Thiram @ 3g/kg seeds",
-                "Ensure proper seed-soil contact by light roller/plank"
-            ],
-            "irrigation": [
-                "First irrigation: Crown Root Initiation stage (20-25 days)",
-                "Second: Late tillering/early jointing (40-45 days)",
-                "Third: Late jointing stage (60-65 days)",
-                "Fourth: Flowering stage (80-85 days)",
-                "Fifth: Milk stage (100-105 days)",
-                "Sixth: Dough stage (115-120 days) - if needed"
-            ],
-            "nutrient_management": [
-                "Basal dose: Apply entire P, K and 50% N before sowing",
-                "First top dressing: 25% N at CRI (20-25 DAS)",
-                "Second top dressing: 25% N at late jointing (60-65 DAS)",
-                "Apply Zinc sulphate @ 10 kg/acre if deficiency observed",
-                "Spray Iron @ 5g/liter if yellowing appears"
-            ]
-        },
+        "critical_growth_stages": [
+            {"stage": "Crown Root Initiation", "days": "20-25", "water_need": "Critical", "nutrients": "High N"},
+            {"stage": "Tillering", "days": "30-50", "water_need": "Medium", "nutrients": "High N"},
+            {"stage": "Jointing", "days": "60-70", "water_need": "High", "nutrients": "Balanced NPK"},
+            {"stage": "Flowering", "days": "80-85", "water_need": "Critical", "nutrients": "Low N, High K"},
+            {"stage": "Grain Filling", "days": "95-110", "water_need": "Medium", "nutrients": "K only"}
+        ],
         "chemical_fertilizers": {
             "urea_kg": "87",
             "dap_kg": "65",
@@ -503,22 +368,10 @@ CROP_DATABASE = {
             "fym_tons": "4-5",
             "vermicompost_kg": "500-600",
             "neem_cake_kg": "80-100",
-            "compost_tons": "2-3",
             "biofertilizers": "Azotobacter + PSB @ 2 kg each per acre",
-            "application_schedule": [
-                "FYM: Apply 3-4 weeks before sowing",
-                "Vermicompost: Mix during final plowing",
-                "Neem cake: Apply as basal at sowing"
-            ]
         },
-        "methods": [
-            "Zero tillage: Direct seeding with specialized drill, saves fuel and time",
-            "Raised bed planting: 20-30% water savings, better drainage"
-        ],
-        "tips": [
-            "Sow within first fortnight of November for optimal yields",
-            "Apply first irrigation at Crown Root Initiation (21 days)"
-        ]
+        "common_pests": ["Aphids", "Termites"],
+        "common_diseases": ["Yellow Rust", "Brown Rust", "Powdery Mildew"]
     },
     "Cotton": {
         "seed_rate_kg_per_acre": "5-6",
@@ -529,43 +382,13 @@ CROP_DATABASE = {
         "best_season": "Kharif (May-June sowing)",
         "soil_type": "Deep black cotton soil",
         "market_price_range": "₹5500-7000/quintal",
-        "detailed_practices": {
-            "pre_sowing": [
-                "Deep summer plowing to 30 cm depth for moisture conservation",
-                "Two harrowing and leveling for proper seed bed",
-                "Ridge and furrow method recommended for better drainage",
-                "Seed treatment: Imidacloprid @ 5g/kg for sucking pests",
-                "Apply Trichoderma enriched FYM @ 5 tons/acre"
-            ],
-            "sowing_planting": [
-                "Sow during May 15 to June 15 with pre-monsoon shower",
-                "Plant 2 seeds per hill at 4-5 cm depth",
-                "Spacing: 90 cm x 60 cm (normal), 90 cm x 30 cm (HDPS)",
-                "Gap filling within 10 days of emergence",
-                "Thinning at 15-20 days, keep one healthy plant per hill"
-            ],
-            "water_irrigation": [
-                "First irrigation: After 3-4 weeks if no rain (establishment)",
-                "Critical stages: Square formation, flowering, boll development",
-                "Maintain soil moisture at 70-80% field capacity",
-                "Avoid water stress during flowering (40-80 days)",
-                "Drip irrigation: 50% water saving with better efficiency"
-            ],
-            "intercultural_operations": [
-                "First hoeing and earthing up at 25-30 days",
-                "Second hoeing at 50-60 days",
-                "Remove suckers and bottom branches touching ground",
-                "Install bird perches @ 10/acre for natural pest control",
-                "Topping: Remove terminal bud at 100-120 days for better boll setting"
-            ],
-            "pest_management": [
-                "Pheromone traps: 5-6 traps/acre from 30 days",
-                "Yellow sticky traps @ 10-12/acre for whitefly monitoring",
-                "Pink bollworm: Release Trichogramma cards @ 5 cards/acre",
-                "Whitefly: Spray Spiromesifen @ 1.5ml/liter if ETL reached",
-                "Bt cotton: Provides 90% protection against bollworms"
-            ]
-        },
+        "critical_growth_stages": [
+            {"stage": "Germination", "days": "0-15", "water_need": "High", "nutrients": "Minimal"},
+            {"stage": "Square Formation", "days": "40-60", "water_need": "Critical", "nutrients": "High N"},
+            {"stage": "Flowering", "days": "70-100", "water_need": "Critical", "nutrients": "Balanced NPK"},
+            {"stage": "Boll Development", "days": "105-140", "water_need": "High", "nutrients": "High K"},
+            {"stage": "Boll Opening", "days": "145-180", "water_need": "Low", "nutrients": "Minimal"}
+        ],
         "chemical_fertilizers": {
             "urea_kg": "87",
             "dap_kg": "65",
@@ -582,23 +405,11 @@ CROP_DATABASE = {
             "fym_tons": "5-6",
             "vermicompost_kg": "800-1000",
             "neem_cake_kg": "120-150",
-            "compost_tons": "3-4",
             "biofertilizers": "Azospirillum + PSB + KSB @ 2 kg each",
-            "application_schedule": [
-                "FYM: Apply 4-5 weeks before sowing",
-                "Vermicompost: Apply at sowing in furrows"
-            ]
         },
-        "methods": [
-            "High Density Planting: 90cm x 30cm spacing, 15-25% yield increase",
-            "Bt cotton hybrids reduce insecticide use by 50%"
-        ],
-        "tips": [
-            "Deep plowing to 25-30cm improves root development",
-            "Install pheromone traps @ 5 traps/acre for monitoring"
-        ]
+        "common_pests": ["Pink Bollworm", "Whitefly", "Aphids"],
+        "common_diseases": ["Wilt", "Root Rot", "Leaf Spot"]
     },
-    # Add more crops with detailed practices following the same pattern
     "Tomato": {
         "seed_rate_kg_per_acre": "80-100 grams",
         "spacing": "60cm x 45cm",
@@ -608,36 +419,13 @@ CROP_DATABASE = {
         "best_season": "Kharif, Rabi & Summer",
         "soil_type": "Well-drained sandy loam",
         "market_price_range": "₹800-2500/quintal",
-        "detailed_practices": {
-            "nursery": [
-                "Raise seedlings in pro-trays or raised beds (15-20 cm height)",
-                "Seed rate: 100-150 grams for one acre transplanting",
-                "Treat seeds with Trichoderma @ 4g/kg or Captan @ 2g/kg",
-                "Seedling ready in 25-30 days (4-5 true leaves)",
-                "Harden seedlings by reducing water 5 days before transplanting"
-            ],
-            "transplanting": [
-                "Transplant in evening hours to reduce transplant shock",
-                "Make pits of 30x30x30 cm at recommended spacing",
-                "Apply FYM/compost @ 1 kg per pit before planting",
-                "Water immediately after transplanting",
-                "Provide shade for 2-3 days using leaves or shade net"
-            ],
-            "staking_pruning": [
-                "Provide bamboo/wooden stakes at 15-20 days (1.5-2m height)",
-                "Tie plants loosely with soft cloth strips as they grow",
-                "Remove lower leaves touching soil to prevent disease",
-                "Remove side shoots (suckers) weekly for determinate varieties",
-                "For indeterminate: Keep 1-2 main stems, remove all side shoots"
-            ],
-            "irrigation_mulching": [
-                "Light irrigation immediately after transplanting",
-                "Daily irrigation for first week, then alternate days",
-                "Critical stages: Flowering and fruit development",
-                "Drip irrigation: Best method, saves 40-50% water",
-                "Plastic mulching: Black film reduces weeds, conserves moisture"
-            ]
-        },
+        "critical_growth_stages": [
+            {"stage": "Transplanting", "days": "0-10", "water_need": "High", "nutrients": "Minimal"},
+            {"stage": "Vegetative Growth", "days": "15-35", "water_need": "Medium", "nutrients": "High N"},
+            {"stage": "Flowering", "days": "40-55", "water_need": "Critical", "nutrients": "Balanced NPK + Ca"},
+            {"stage": "Fruit Setting", "days": "60-75", "water_need": "High", "nutrients": "High K + Ca"},
+            {"stage": "Fruit Development", "days": "80-90", "water_need": "Medium", "nutrients": "High K"}
+        ],
         "chemical_fertilizers": {
             "urea_kg": "108",
             "dap_kg": "109",
@@ -654,19 +442,9 @@ CROP_DATABASE = {
             "vermicompost_kg": "800-1000",
             "neem_cake_kg": "100-120",
             "biofertilizers": "Azotobacter + PSB @ 2 kg each",
-            "application_schedule": [
-                "FYM: Mix 2-3 weeks before transplanting",
-                "Vermicompost: Apply in pits at transplanting"
-            ]
         },
-        "methods": [
-            "Polyhouse: Year-round production, 121-162 tons/acre yield",
-            "Drip + mulch: 50% water saving, better quality"
-        ],
-        "tips": [
-            "Transplant 30-35 day old seedlings in evening",
-            "Apply calcium and boron sprays to prevent cracking"
-        ]
+        "common_pests": ["Fruit Borer", "Whitefly", "Leaf Miner"],
+        "common_diseases": ["Early Blight", "Late Blight", "Wilt", "Leaf Curl Virus"]
     },
     "Onion": {
         "seed_rate_kg_per_acre": "3-4",
@@ -677,6 +455,13 @@ CROP_DATABASE = {
         "best_season": "Kharif, Late Kharif, Rabi",
         "soil_type": "Well-drained loamy soil",
         "market_price_range": "₹1000-3500/quintal",
+        "critical_growth_stages": [
+            {"stage": "Transplanting", "days": "0-10", "water_need": "High", "nutrients": "Minimal"},
+            {"stage": "Vegetative Growth", "days": "15-50", "water_need": "Medium", "nutrients": "High N"},
+            {"stage": "Bulb Initiation", "days": "60-90", "water_need": "Critical", "nutrients": "Balanced NPK"},
+            {"stage": "Bulb Development", "days": "100-130", "water_need": "Medium", "nutrients": "High K"},
+            {"stage": "Maturity", "days": "140-150", "water_need": "Stop", "nutrients": "None"}
+        ],
         "chemical_fertilizers": {
             "urea_kg": "72",
             "dap_kg": "54",
@@ -694,186 +479,12 @@ CROP_DATABASE = {
             "neem_cake_kg": "80-100",
             "biofertilizers": "Azospirillum + PSB @ 2 kg each"
         },
-        "methods": ["Raised bed: 15-20% yield increase", "Drip irrigation: 40% water saving"],
-        "tips": ["Transplant 45-50 day seedlings", "Apply sulfur for better pungency"]
+        "common_pests": ["Thrips", "Onion Maggot"],
+        "common_diseases": ["Purple Blotch", "Stemphylium Blight", "Basal Rot"]
     }
 }
 
-# Other databases (keeping originals)
-SEASONAL_CALENDAR = {
-    "Kharif": {
-        "description": "Monsoon crops sown with monsoon, harvested at end",
-        "sowing_period": "June - August",
-        "harvesting_period": "September - November",
-        "characteristics": ["Warm weather required", "Depends on monsoon", "Temperature: 25-35°C"],
-        "crops": {
-            "Rice": {"sowing": "June-July", "harvesting": "Oct-Nov", "duration": "120-150 days"},
-            "Cotton": {"sowing": "May-June", "harvesting": "Oct-Jan", "duration": "150-180 days"}
-        }
-    },
-    "Rabi": {
-        "description": "Winter crops sown in winter, harvested in spring",
-        "sowing_period": "October - December",
-        "harvesting_period": "March - May",
-        "characteristics": ["Cool weather for growth", "Needs irrigation", "Temperature: 10-25°C"],
-        "crops": {
-            "Wheat": {"sowing": "Oct-Nov", "harvesting": "Mar-Apr", "duration": "110-130 days"}
-        }
-    },
-    "Zaid": {
-        "description": "Summer crops between Rabi and Kharif",
-        "sowing_period": "March - May",
-        "harvesting_period": "June - August",
-        "characteristics": ["Short duration", "Irrigation required", "Temperature: 25-40°C"],
-        "crops": {}
-    }
-}
-
-DISEASE_DATABASE = {
-    "Rice": [
-        {"name": "Blast Disease", "symptoms": "Leaf spots, neck blast", "control": "Tricyclazole 75% WP @ 60g/acre"},
-        {"name": "Brown Plant Hopper", "symptoms": "Yellowing, hopper burn", "control": "Imidacloprid @ 20ml/acre"}
-    ],
-    "Wheat": [
-        {"name": "Yellow Rust", "symptoms": "Yellow pustules in rows", "control": "Propiconazole @ 100ml/acre"}
-    ],
-    "Cotton": [
-        {"name": "Pink Bollworm", "symptoms": "Bored bolls", "control": "Pheromone traps @ 5/acre"}
-    ]
-}
-
-GOVERNMENT_SCHEMES = {
-    "PM-KISAN": {
-        "name": "PM Kisan Samman Nidhi",
-        "benefit": "₹6000/year in 3 installments",
-        "eligibility": "All landholding farmers",
-        "website": "https://pmkisan.gov.in/",
-        "helpline": "011-24300606"
-    },
-    "PMFBY": {
-        "name": "Pradhan Mantri Fasal Bima Yojana",
-        "benefit": "Crop insurance at 2% (Kharif), 1.5% (Rabi)",
-        "eligibility": "All farmers",
-        "website": "https://pmfby.gov.in/",
-        "helpline": "1800-180-1551"
-    }
-}
-
-# ====================
-# AI HELPER FUNCTIONS
-# ====================
-
-def get_ai_response(user_message, context=""):
-    """Get AI response from Claude"""
-    client = get_anthropic_client()
-    if not client:
-        return "🤖 AI Assistant is not configured. Please add ANTHROPIC_API_KEY to secrets."
-    
-    try:
-        user_data = st.session_state.get('user_data', {})
-        location = f"{user_data.get('village', 'Unknown')}, {user_data.get('tehsil', 'Unknown')}, {user_data.get('district', 'Maharashtra')}"
-        
-        system_prompt = f"""You are KrishiMitra AI, an expert agricultural advisor for Maharashtra farmers. 
-        
-Current farmer context:
-- Location: {location}
-- Farm size: {user_data.get('farm_size', 'Unknown')} acres
-
-You provide:
-1. Practical farming advice specific to Maharashtra
-2. Crop recommendations based on location and season
-3. Pest and disease management guidance
-4. Market insights and pricing trends
-5. Government scheme information
-
-Always be:
-- Concise and practical
-- Supportive and encouraging
-- Specific to Indian/Maharashtra agriculture
-- Use simple language with Marathi terms where helpful
-
-{context}"""
-        
-        message = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=1024,
-            system=system_prompt,
-            messages=[
-                {"role": "user", "content": user_message}
-            ]
-        )
-        
-        return message.content[0].text
-    except Exception as e:
-        return f"Sorry, I encountered an error: {str(e)}"
-
-def get_crop_recommendation_ai(district, tehsil, season, soil_type="", budget="medium"):
-    """Get AI-powered crop recommendation"""
-    client = get_anthropic_client()
-    if not client:
-        return "AI recommendations unavailable. Please configure ANTHROPIC_API_KEY."
-    
-    try:
-        prompt = f"""As an agricultural expert, recommend the best 3 crops for:
-        
-Location: {tehsil}, {district}, Maharashtra
-Season: {season}
-Soil Type: {soil_type if soil_type else 'General Maharashtra soil'}
-Budget: {budget}
-
-Provide:
-1. Top 3 crop recommendations with reasons
-2. Expected yield and profit potential
-3. Key success factors for each crop
-4. Water and input requirements
-
-Keep response practical and specific to this location."""
-
-        message = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=1500,
-            messages=[{"role": "user", "content": prompt}]
-        )
-        
-        return message.content[0].text
-    except Exception as e:
-        return f"Error getting recommendations: {str(e)}"
-
-def analyze_disease_ai(crop, symptoms):
-    """AI-powered disease diagnosis"""
-    client = get_anthropic_client()
-    if not client:
-        return "AI disease diagnosis unavailable."
-    
-    try:
-        prompt = f"""As a plant pathologist, diagnose this issue:
-
-Crop: {crop}
-Symptoms observed: {symptoms}
-
-Provide:
-1. Most likely disease/pest (with confidence level)
-2. Detailed symptoms to confirm
-3. Treatment recommendations (organic and chemical)
-4. Prevention measures
-5. Expected recovery time
-
-Be specific and actionable."""
-
-        message = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=1200,
-            messages=[{"role": "user", "content": prompt}]
-        )
-        
-        return message.content[0].text
-    except Exception as e:
-        return f"Error in diagnosis: {str(e)}"
-
-# ====================
-# DATABASE FUNCTIONS (Original)
-# ====================
-
+# Database Functions
 def init_database():
     """Initialize SQLite database"""
     conn = sqlite3.connect('krishimitra.db', check_same_thread=False)
@@ -903,57 +514,51 @@ def init_database():
                   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                   FOREIGN KEY(user_id) REFERENCES users(id))''')
     
-    c.execute('''CREATE TABLE IF NOT EXISTS notifications
+    c.execute('''CREATE TABLE IF NOT EXISTS crop_tracking
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   user_id INTEGER,
-                  notification_type TEXT,
-                  message TEXT,
-                  status TEXT DEFAULT 'pending',
+                  crop_name TEXT,
+                  area_acres REAL,
+                  sowing_date DATE,
+                  expected_harvest_date DATE,
+                  current_stage TEXT,
+                  days_after_sowing INTEGER,
+                  health_status TEXT,
+                  notes TEXT,
                   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                  sent_at TIMESTAMP,
                   FOREIGN KEY(user_id) REFERENCES users(id))''')
     
-    c.execute('''CREATE TABLE IF NOT EXISTS marketplace_listings
+    c.execute('''CREATE TABLE IF NOT EXISTS price_alerts
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                  seller_id INTEGER,
-                  crop_name TEXT,
-                  quantity REAL,
-                  unit TEXT,
-                  price_per_unit REAL,
-                  quality_grade TEXT,
-                  location TEXT,
-                  description TEXT,
+                  user_id INTEGER,
+                  commodity TEXT,
+                  target_price REAL,
+                  alert_type TEXT,
                   status TEXT DEFAULT 'Active',
                   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                  FOREIGN KEY(seller_id) REFERENCES users(id))''')
+                  FOREIGN KEY(user_id) REFERENCES users(id))''')
     
-    c.execute('''CREATE TABLE IF NOT EXISTS bids
+    c.execute('''CREATE TABLE IF NOT EXISTS irrigation_schedule
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                  listing_id INTEGER,
-                  buyer_id INTEGER,
-                  bid_amount REAL,
-                  bid_quantity REAL,
-                  buyer_name TEXT,
-                  buyer_phone TEXT,
-                  message TEXT,
-                  status TEXT DEFAULT 'Pending',
+                  user_id INTEGER,
+                  crop_name TEXT,
+                  schedule_date DATE,
+                  water_amount REAL,
+                  completed BOOLEAN DEFAULT 0,
+                  notes TEXT,
                   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                  FOREIGN KEY(listing_id) REFERENCES marketplace_listings(id),
-                  FOREIGN KEY(buyer_id) REFERENCES users(id))''')
+                  FOREIGN KEY(user_id) REFERENCES users(id))''')
     
-    c.execute('''CREATE TABLE IF NOT EXISTS manual_market_prices
+    c.execute('''CREATE TABLE IF NOT EXISTS yield_predictions
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                  district TEXT,
-                  market_name TEXT,
-                  commodity TEXT,
-                  min_price REAL,
-                  max_price REAL,
-                  modal_price REAL,
-                  arrival_quantity TEXT,
-                  price_date DATE,
-                  updated_by INTEGER,
-                  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                  FOREIGN KEY(updated_by) REFERENCES users(id))''')
+                  user_id INTEGER,
+                  crop_name TEXT,
+                  area_acres REAL,
+                  predicted_yield REAL,
+                  confidence_level TEXT,
+                  factors TEXT,
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  FOREIGN KEY(user_id) REFERENCES users(id))''')
     
     conn.commit()
     conn.close()
@@ -1020,65 +625,54 @@ def get_user_activities(user_id, limit=10):
     conn.close()
     return activities
 
-def create_notification(user_id, notification_type, message):
-    conn = sqlite3.connect('krishimitra.db')
-    c = conn.cursor()
-    c.execute('''INSERT INTO notifications (user_id, notification_type, message)
-                 VALUES (?, ?, ?)''',
-              (user_id, notification_type, message))
-    conn.commit()
-    conn.close()
+# AI Helper Functions
+def get_ai_response(user_message, context=""):
+    """Get AI response from Claude"""
+    client = get_anthropic_client()
+    if not client:
+        return "AI Assistant is not configured. Please add ANTHROPIC_API_KEY to secrets."
+    
+    try:
+        user_data = st.session_state.get('user_data', {})
+        location = f"{user_data.get('village', 'Unknown')}, {user_data.get('tehsil', 'Unknown')}, {user_data.get('district', 'Maharashtra')}"
+        
+        system_prompt = f"""You are KrishiMitra AI, an expert agricultural advisor for Maharashtra farmers. 
+        
+Current farmer context:
+- Location: {location}
+- Farm size: {user_data.get('farm_size', 'Unknown')} acres
 
-def get_manual_prices(commodity=None, district=None, days=30):
-    conn = sqlite3.connect('krishimitra.db')
-    c = conn.cursor()
-    query = '''SELECT district, market_name, commodity, min_price, max_price, modal_price, 
-               arrival_quantity, price_date, updated_at 
-               FROM manual_market_prices 
-               WHERE price_date >= date('now', '-' || ? || ' days')'''
-    params = [days]
-    if commodity:
-        query += " AND commodity = ?"
-        params.append(commodity)
-    if district:
-        query += " AND district = ?"
-        params.append(district)
-    query += " ORDER BY price_date DESC"
-    c.execute(query, params)
-    results = c.fetchall()
-    conn.close()
-    if results:
-        return pd.DataFrame(results, columns=['district', 'market', 'commodity', 'min_price', 
-                                               'max_price', 'modal_price', 'arrival_quantity', 
-                                               'price_date', 'updated_at'])
-    return None
+You provide:
+1. Practical farming advice specific to Maharashtra
+2. Crop recommendations based on location and season
+3. Pest and disease management guidance
+4. Market insights and pricing trends
+5. Government scheme information
+6. Yield optimization strategies
+7. Water and soil management
 
-def add_manual_price(district, market_name, commodity, min_price, max_price, modal_price, 
-                     arrival_quantity, price_date, updated_by):
-    conn = sqlite3.connect('krishimitra.db')
-    c = conn.cursor()
-    c.execute('''INSERT INTO manual_market_prices 
-                 (district, market_name, commodity, min_price, max_price, modal_price, 
-                  arrival_quantity, price_date, updated_by)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-              (district, market_name, commodity, min_price, max_price, modal_price, 
-               arrival_quantity, price_date, updated_by))
-    conn.commit()
-    conn.close()
+Always be:
+- Concise and practical
+- Supportive and encouraging
+- Specific to Indian/Maharashtra agriculture
+- Data-driven with actionable advice
 
-def get_nearest_mandis(district):
-    mandis = {
-        "Pune": ["Pune Market Yard", "Baramati APMC", "Daund APMC"],
-        "Nagpur": ["Nagpur Cotton Market", "Kamptee APMC"],
-        "Nashik": ["Nashik APMC", "Lasalgaon APMC"],
-        "Mumbai Suburban": ["Vashi APMC", "Turbhe Market"]
-    }
-    return mandis.get(district, ["Contact District Agriculture Office"])
+{context}"""
+        
+        message = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=1500,
+            system=system_prompt,
+            messages=[
+                {"role": "user", "content": user_message}
+            ]
+        )
+        
+        return message.content[0].text
+    except Exception as e:
+        return f"Sorry, I encountered an error: {str(e)}"
 
-# ====================
-# MAIN APPLICATION
-# ====================
-
+# Main Application
 def main():
     init_database()
     st.markdown('<div class="main-header">🌾 KrishiMitra Maharashtra - AI Powered</div>', unsafe_allow_html=True)
@@ -1091,7 +685,7 @@ def main():
 
 def show_auth_page():
     """Authentication page"""
-    tab1, tab2 = st.tabs(["🔐 Login", "📝 Register"])
+    tab1, tab2 = st.tabs(["Login", "Register"])
     
     with tab1:
         st.markdown("### Login")
@@ -1131,7 +725,7 @@ def show_auth_page():
                 user_type = st.selectbox("I am a", ["Farmer", "Buyer/Trader"])
                 farm_size = st.number_input("Farm Size (Acres)", min_value=0.1, value=1.0, step=0.5)
             
-            st.markdown("### 📍 Location Details")
+            st.markdown("### Location Details")
             col1, col2, col3 = st.columns(3)
             with col1:
                 district = st.selectbox("District*", ["Select"] + list(MAHARASHTRA_LOCATIONS.keys()))
@@ -1163,44 +757,48 @@ def show_auth_page():
                     success, result = create_user(new_username, new_password, full_name, mobile, 
                                                  email, district, tehsil, village, farm_size, user_type)
                     if success:
-                        st.success("✅ Account created! Please login")
+                        st.success("Account created! Please login")
                         st.balloons()
                     else:
                         st.error(f"Error: {result}")
 
 def show_main_app():
-    """Main app with fixed navigation"""
+    """Main app with navigation"""
     user = st.session_state.user_data
     
     with st.sidebar:
-        st.markdown(f"### 👤 {user['full_name']}")
-        st.markdown(f"**📍 {user['village']}, {user['tehsil']}**")
-        st.markdown(f"**🌾 Farm: {user['farm_size']} acres**")
+        st.markdown(f"### {user['full_name']}")
+        st.markdown(f"**{user['village']}, {user['tehsil']}**")
+        st.markdown(f"**Farm: {user['farm_size']} acres**")
         st.markdown("---")
         
         # Define pages based on user type
         if user.get('user_type') == 'Farmer':
             pages = [
-                "🏠 Dashboard",
-                "🤖 AI Assistant", 
-                "🌱 Seed Calculator",
-                "📊 Market Prices",
-                "📖 Complete Crop Guide",
-                "💰 Profit Calculator",
-                "🦠 Disease Diagnosis",
-                "📱 Notifications",
-                "📊 My Activity"
+                "Dashboard",
+                "AI Assistant", 
+                "Crop Growth Tracker",
+                "Smart Irrigation Planner",
+                "Soil Health Analyzer",
+                "Yield Predictor",
+                "Seed Calculator",
+                "Market Prices",
+                "Price Alert System",
+                "Best Time to Sell",
+                "Complete Crop Guide",
+                "Profit Calculator",
+                "Disease Diagnosis",
+                "My Activity"
             ]
         else:
             pages = [
-                "🏠 Dashboard",
-                "🤖 AI Assistant",
-                "📊 Market Prices",
-                "📱 Notifications"
+                "Dashboard",
+                "AI Assistant",
+                "Market Prices",
+                "Price Alert System"
             ]
         
-        # Navigation with proper state management
-        st.markdown("### 🧭 Navigation")
+        st.markdown("### Navigation")
         for page in pages:
             if st.button(page, key=f"nav_{page}", use_container_width=True, 
                         type="primary" if st.session_state.current_page == page else "secondary"):
@@ -1208,120 +806,160 @@ def show_main_app():
                 st.rerun()
         
         st.markdown("---")
-        if st.button("🚪 Logout", use_container_width=True):
+        if st.button("Logout", use_container_width=True):
             st.session_state.user_data = None
-            st.session_state.current_page = "🏠 Dashboard"
+            st.session_state.current_page = "Dashboard"
             st.rerun()
     
     # Page routing
     page = st.session_state.current_page
     
     try:
-        if page == "🏠 Dashboard":
+        if page == "Dashboard":
             show_dashboard()
-        elif page == "🤖 AI Assistant":
+        elif page == "AI Assistant":
             show_ai_assistant()
-        elif page == "🌱 Seed Calculator":
+        elif page == "Crop Growth Tracker":
+            show_crop_growth_tracker()
+        elif page == "Smart Irrigation Planner":
+            show_smart_irrigation_planner()
+        elif page == "Soil Health Analyzer":
+            show_soil_health_analyzer()
+        elif page == "Yield Predictor":
+            show_yield_predictor()
+        elif page == "Seed Calculator":
             show_seed_fertilizer_calculator()
-        elif page == "📊 Market Prices":
+        elif page == "Market Prices":
             show_live_market_prices()
-        elif page == "📖 Complete Crop Guide":
+        elif page == "Price Alert System":
+            show_price_alert_system()
+        elif page == "Best Time to Sell":
+            show_best_time_to_sell()
+        elif page == "Complete Crop Guide":
             show_complete_crop_guide()
-        elif page == "💰 Profit Calculator":
+        elif page == "Profit Calculator":
             show_profit_calculator()
-        elif page == "🦠 Disease Diagnosis":
+        elif page == "Disease Diagnosis":
             show_ai_disease_diagnosis()
-        elif page == "📱 Notifications":
-            show_notifications()
-        elif page == "📊 My Activity":
+        elif page == "My Activity":
             show_activity_history()
         else:
             show_dashboard()
     except Exception as e:
         st.error(f"Error: {str(e)}")
-        if st.button("🔄 Refresh"):
+        if st.button("Refresh"):
             st.rerun()
 
-# ====================
-# PAGE FUNCTIONS
-# ====================
-
+# Page Functions
 def show_dashboard():
     """Enhanced Dashboard"""
     user = st.session_state.user_data
-    st.markdown(f"### 🏠 Welcome, {user['full_name']}!")
+    st.markdown(f"### Welcome, {user['full_name']}!")
     
     # Metrics
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Your Farm", f"{user['farm_size']} acres", "🌾")
-    with col2:
-        activities = get_user_activities(user['id'], limit=1000)
-        st.metric("Activities", len(activities), "📊")
-    with col3:
-        st.metric("Location", f"{user['tehsil']}, {user['district']}", "📍")
-    
-    # Quick actions
-    st.markdown("### ⚡ Quick Actions")
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        if st.button("🤖 Ask AI", use_container_width=True):
-            st.session_state.current_page = "🤖 AI Assistant"
+        st.metric("Your Farm", f"{user['farm_size']} acres")
+    with col2:
+        activities = get_user_activities(user['id'], limit=1000)
+        st.metric("Activities", len(activities))
+    with col3:
+        conn = sqlite3.connect('krishimitra.db')
+        c = conn.cursor()
+        c.execute("SELECT COUNT(*) FROM crop_tracking WHERE user_id=?", (user['id'],))
+        crop_count = c.fetchone()[0]
+        conn.close()
+        st.metric("Active Crops", crop_count)
+    with col4:
+        st.metric("Location", f"{user['district']}")
+    
+    # Quick actions
+    st.markdown("### Quick Actions")
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        if st.button("AI Assistant", use_container_width=True):
+            st.session_state.current_page = "AI Assistant"
             st.rerun()
     with col2:
-        if st.button("🌱 Calculate Seeds", use_container_width=True):
-            st.session_state.current_page = "🌱 Seed Calculator"
+        if st.button("Track Crops", use_container_width=True):
+            st.session_state.current_page = "Crop Growth Tracker"
             st.rerun()
     with col3:
-        if st.button("📊 Check Prices", use_container_width=True):
-            st.session_state.current_page = "📊 Market Prices"
+        if st.button("Check Prices", use_container_width=True):
+            st.session_state.current_page = "Market Prices"
             st.rerun()
     with col4:
-        if st.button("📖 Crop Guide", use_container_width=True):
-            st.session_state.current_page = "📖 Complete Crop Guide"
+        if st.button("Predict Yield", use_container_width=True):
+            st.session_state.current_page = "Yield Predictor"
             st.rerun()
     
+    # Active crop tracking summary
+    st.markdown("### Active Crop Status")
+    conn = sqlite3.connect('krishimitra.db')
+    c = conn.cursor()
+    c.execute('''SELECT crop_name, area_acres, days_after_sowing, current_stage, health_status 
+                 FROM crop_tracking WHERE user_id=? ORDER BY sowing_date DESC LIMIT 5''', (user['id'],))
+    crops = c.fetchall()
+    conn.close()
+    
+    if crops:
+        for crop in crops:
+            col1, col2, col3 = st.columns([2, 2, 1])
+            with col1:
+                st.write(f"**{crop[0]}** - {crop[1]} acres")
+            with col2:
+                st.write(f"Day {crop[2]} - {crop[3]}")
+            with col3:
+                if crop[4] == "Healthy":
+                    st.success("Healthy")
+                elif crop[4] == "Attention":
+                    st.warning("Attention")
+                else:
+                    st.error("Critical")
+    else:
+        st.info("No active crops. Start tracking your crops for better yield management!")
+    
     # Recent activities
-    st.markdown("### 📈 Recent Activities")
+    st.markdown("### Recent Activities")
     recent = get_user_activities(user['id'], limit=5)
     if recent:
         for act in recent:
             st.markdown(f"- **{act[0]}**: {act[1]} ({act[2]} acres) - {act[4]}")
     else:
-        st.info("No activities yet. Start using the calculators and tools!")
+        st.info("No activities yet. Start using the tools!")
 
 def show_ai_assistant():
     """AI Chat Assistant"""
-    st.markdown("### 🤖 AI Agricultural Assistant")
+    st.markdown("### AI Agricultural Assistant")
     st.markdown("Ask me anything about farming, crops, market prices, or government schemes!")
     
     client = get_anthropic_client()
     if not client:
-        st.warning("⚠️ AI Assistant requires ANTHROPIC_API_KEY in secrets. Demo responses will be limited.")
+        st.warning("AI Assistant requires ANTHROPIC_API_KEY in secrets.")
     
     # Chat interface
     for message in st.session_state.chat_history:
         if message["role"] == "user":
-            st.markdown(f'<div class="chat-message user-message">👤 <strong>You:</strong> {message["content"]}</div>', 
+            st.markdown(f'<div class="chat-message user-message"><strong>You:</strong> {message["content"]}</div>', 
                        unsafe_allow_html=True)
         else:
-            st.markdown(f'<div class="chat-message assistant-message">🤖 <strong>KrishiMitra AI:</strong> {message["content"]}</div>', 
+            st.markdown(f'<div class="chat-message assistant-message"><strong>KrishiMitra AI:</strong> {message["content"]}</div>', 
                        unsafe_allow_html=True)
     
     # Quick action buttons
-    st.markdown("### 🚀 Quick Questions")
+    st.markdown("### Quick Questions")
     col1, col2, col3 = st.columns(3)
     with col1:
-        if st.button("🌾 Best crops for my location", use_container_width=True):
+        if st.button("Best crops for my location", use_container_width=True):
             user = st.session_state.user_data
-            question = f"What are the best crops for {user['tehsil']}, {user['district']}?"
+            question = f"What are the best crops for {user['tehsil']}, {user['district']} this season?"
             with st.spinner("Thinking..."):
                 response = get_ai_response(question)
                 st.session_state.chat_history.append({"role": "user", "content": question})
                 st.session_state.chat_history.append({"role": "assistant", "content": response})
                 st.rerun()
     with col2:
-        if st.button("💰 Current market trends", use_container_width=True):
+        if st.button("Current market trends", use_container_width=True):
             question = "What are the current agricultural market trends in Maharashtra?"
             with st.spinner("Analyzing..."):
                 response = get_ai_response(question)
@@ -1329,8 +967,8 @@ def show_ai_assistant():
                 st.session_state.chat_history.append({"role": "assistant", "content": response})
                 st.rerun()
     with col3:
-        if st.button("🛡️ Government schemes", use_container_width=True):
-            question = "What government schemes are available for farmers?"
+        if st.button("Yield improvement tips", use_container_width=True):
+            question = "What are the top 5 ways to increase crop yields in Maharashtra?"
             with st.spinner("Searching..."):
                 response = get_ai_response(question)
                 st.session_state.chat_history.append({"role": "user", "content": question})
@@ -1339,8 +977,8 @@ def show_ai_assistant():
     
     # Chat input
     with st.form("chat_form", clear_on_submit=True):
-        user_input = st.text_area("Your question:", placeholder="E.g., What is the best time to plant cotton?", height=100)
-        submitted = st.form_submit_button("Send 📤", use_container_width=True, type="primary")
+        user_input = st.text_area("Your question:", placeholder="E.g., How can I increase my rice yield?", height=100)
+        submitted = st.form_submit_button("Send", use_container_width=True, type="primary")
         
         if submitted and user_input:
             with st.spinner("Getting answer..."):
@@ -1350,126 +988,762 @@ def show_ai_assistant():
                 st.rerun()
     
     if st.session_state.chat_history:
-        if st.button("🗑️ Clear Chat History"):
+        if st.button("Clear Chat History"):
             st.session_state.chat_history = []
             st.rerun()
 
-def show_ai_disease_diagnosis():
-    """AI Disease Diagnosis"""
-    st.markdown("### 🦠 AI Disease & Pest Diagnosis")
-    st.markdown("Describe symptoms and get instant diagnosis with treatment recommendations")
+def show_crop_growth_tracker():
+    """Crop Growth Tracking System"""
+    st.markdown("### Crop Growth Tracker")
+    st.markdown("Monitor your crops day-by-day for optimal yield")
+    
+    user = st.session_state.user_data
+    
+    tab1, tab2, tab3 = st.tabs(["Active Crops", "Add New Crop", "Growth Insights"])
+    
+    with tab1:
+        conn = sqlite3.connect('krishimitra.db')
+        c = conn.cursor()
+        c.execute('''SELECT id, crop_name, area_acres, sowing_date, days_after_sowing, 
+                     current_stage, health_status, notes 
+                     FROM crop_tracking WHERE user_id=? ORDER BY sowing_date DESC''', (user['id'],))
+        crops = c.fetchall()
+        conn.close()
+        
+        if crops:
+            for crop in crops:
+                with st.expander(f"{crop[1]} - {crop[2]} acres (Day {crop[4]})"):
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("Current Stage", crop[5])
+                        st.metric("Days After Sowing", crop[4])
+                    with col2:
+                        st.metric("Health Status", crop[6])
+                        st.metric("Sowing Date", crop[3])
+                    with col3:
+                        crop_info = CROP_DATABASE.get(crop[1], {})
+                        duration = crop_info.get("duration_days", "120-150")
+                        max_days = int(duration.split("-")[-1])
+                        progress = (crop[4] / max_days) * 100
+                        st.metric("Progress", f"{progress:.1f}%")
+                    
+                    if crop[7]:
+                        st.info(f"Notes: {crop[7]}")
+                    
+                    # Show current stage requirements
+                    if crop[1] in CROP_DATABASE and "critical_growth_stages" in CROP_DATABASE[crop[1]]:
+                        stages = CROP_DATABASE[crop[1]]["critical_growth_stages"]
+                        current_stage = None
+                        for stage in stages:
+                            day_range = stage["days"].split("-")
+                            start = int(day_range[0])
+                            end = int(day_range[-1])
+                            if start <= crop[4] <= end:
+                                current_stage = stage
+                                break
+                        
+                        if current_stage:
+                            st.markdown("#### Current Stage Requirements")
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.write(f"**Water Need:** {current_stage['water_need']}")
+                            with col2:
+                                st.write(f"**Nutrients:** {current_stage['nutrients']}")
+                    
+                    # AI recommendations for this stage
+                    if st.button(f"Get AI Recommendations for {crop[1]}", key=f"ai_{crop[0]}"):
+                        with st.spinner("Getting stage-specific recommendations..."):
+                            prompt = f"""Provide specific care recommendations for {crop[1]} at day {crop[4]}:
+                            
+                            Current details:
+                            - Stage: {crop[5]}
+                            - Health: {crop[6]}
+                            - Location: {user['tehsil']}, {user['district']}
+                            
+                            Provide:
+                            1. Critical actions needed now
+                            2. Irrigation schedule for next 7 days
+                            3. Nutrient application timing
+                            4. Pest/disease watch points
+                            5. Expected challenges in next growth stage
+                            """
+                            response = get_ai_response(prompt)
+                            st.markdown('<div class="ai-card">', unsafe_allow_html=True)
+                            st.markdown(response)
+                            st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            st.info("No crops being tracked. Add your first crop below!")
+    
+    with tab2:
+        st.markdown("### Add New Crop to Track")
+        with st.form("add_crop_tracking"):
+            col1, col2 = st.columns(2)
+            with col1:
+                crop_name = st.selectbox("Crop", list(CROP_DATABASE.keys()))
+                area = st.number_input("Area (Acres)", min_value=0.1, value=1.0)
+            with col2:
+                sowing_date = st.date_input("Sowing Date", value=datetime.now())
+                health_status = st.selectbox("Current Health", ["Healthy", "Attention", "Critical"])
+            
+            notes = st.text_area("Notes", placeholder="Any observations...")
+            
+            submitted = st.form_submit_button("Start Tracking", use_container_width=True, type="primary")
+            
+            if submitted:
+                days_after_sowing = (datetime.now().date() - sowing_date).days
+                crop_info = CROP_DATABASE[crop_name]
+                duration = crop_info.get("duration_days", "120-150")
+                max_days = int(duration.split("-")[-1])
+                expected_harvest = sowing_date + timedelta(days=max_days)
+                
+                # Determine current stage
+                current_stage = "Germination"
+                if "critical_growth_stages" in crop_info:
+                    for stage in crop_info["critical_growth_stages"]:
+                        day_range = stage["days"].split("-")
+                        start = int(day_range[0])
+                        end = int(day_range[-1])
+                        if start <= days_after_sowing <= end:
+                            current_stage = stage["stage"]
+                            break
+                
+                conn = sqlite3.connect('krishimitra.db')
+                c = conn.cursor()
+                c.execute('''INSERT INTO crop_tracking 
+                            (user_id, crop_name, area_acres, sowing_date, expected_harvest_date,
+                             current_stage, days_after_sowing, health_status, notes)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                         (user['id'], crop_name, area, sowing_date, expected_harvest, 
+                          current_stage, days_after_sowing, health_status, notes))
+                conn.commit()
+                conn.close()
+                
+                st.success(f"Started tracking {crop_name}!")
+                log_activity(user['id'], "Crop Tracking Started", crop_name, area, 
+                            {"sowing_date": str(sowing_date)})
+                st.rerun()
+    
+    with tab3:
+        st.markdown("### Growth Insights & Analytics")
+        
+        conn = sqlite3.connect('krishimitra.db')
+        c = conn.cursor()
+        c.execute('''SELECT crop_name, COUNT(*), AVG(area_acres) 
+                     FROM crop_tracking WHERE user_id=? GROUP BY crop_name''', (user['id'],))
+        summary = c.fetchall()
+        conn.close()
+        
+        if summary:
+            df = pd.DataFrame(summary, columns=['Crop', 'Times Grown', 'Avg Area'])
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                fig = px.bar(df, x='Crop', y='Times Grown', title="Crop History")
+                st.plotly_chart(fig, use_container_width=True)
+            with col2:
+                fig = px.pie(df, values='Avg Area', names='Crop', title="Area Distribution")
+                st.plotly_chart(fig, use_container_width=True)
+
+def show_smart_irrigation_planner():
+    """AI-powered irrigation scheduling"""
+    st.markdown("### Smart Irrigation Planner")
+    st.markdown("Get AI-powered irrigation schedule based on crop stage and conditions")
+    
+    user = st.session_state.user_data
     
     col1, col2 = st.columns(2)
     with col1:
-        crop_name = st.selectbox("Select Crop", list(CROP_DATABASE.keys()))
+        crop = st.selectbox("Current Crop", list(CROP_DATABASE.keys()))
+        days_after_sowing = st.number_input("Days After Sowing/Transplanting", 1, 200, 30)
+        area = st.number_input("Area (Acres)", 0.1, 100.0, 1.0)
+    
     with col2:
-        st.info("💡 Be specific about symptoms for accurate diagnosis")
+        irrigation_type = st.selectbox("Irrigation Method", 
+                                       ["Drip", "Sprinkler", "Flood", "Furrow"])
+        soil_type = st.selectbox("Soil Type", 
+                                 ["Clay", "Loam", "Sandy", "Sandy Loam", "Clay Loam"])
+        recent_rainfall = st.number_input("Recent Rainfall (mm in last 7 days)", 0.0, 200.0, 0.0)
     
-    symptoms = st.text_area(
-        "Describe the symptoms you're seeing:",
-        placeholder="E.g., Yellow spots on leaves, wilting stems, holes in leaves...",
-        height=150
-    )
+    if st.button("Generate Irrigation Schedule", type="primary", use_container_width=True):
+        with st.spinner("Creating personalized irrigation schedule..."):
+            crop_info = CROP_DATABASE[crop]
+            
+            # Determine current stage
+            current_stage = "Vegetative"
+            water_need = "Medium"
+            if "critical_growth_stages" in crop_info:
+                for stage in crop_info["critical_growth_stages"]:
+                    day_range = stage["days"].split("-")
+                    start = int(day_range[0])
+                    end = int(day_range[-1])
+                    if start <= days_after_sowing <= end:
+                        current_stage = stage["stage"]
+                        water_need = stage["water_need"]
+                        break
+            
+            prompt = f"""Create a detailed 7-day irrigation schedule:
+            
+            Farm Details:
+            - Location: {user['tehsil']}, {user['district']}, Maharashtra
+            - Crop: {crop} (Day {days_after_sowing})
+            - Current Stage: {current_stage}
+            - Area: {area} acres
+            - Irrigation Method: {irrigation_type}
+            - Soil Type: {soil_type}
+            - Recent Rainfall: {recent_rainfall} mm
+            - Water Need Level: {water_need}
+            
+            Provide:
+            1. Day-by-day irrigation schedule (next 7 days)
+            2. Water quantity per irrigation (in liters or mm)
+            3. Best time of day for irrigation
+            4. Signs to watch for under/over watering
+            5. Water savings tips for {irrigation_type} system
+            6. Expected water consumption for the week
+            
+            Consider the crop stage and recent rainfall in recommendations."""
+            
+            response = get_ai_response(prompt)
+            
+            st.markdown('<div class="ai-card">', unsafe_allow_html=True)
+            st.markdown("### Your Personalized Irrigation Schedule")
+            st.markdown(f"**Current Stage:** {current_stage} | **Water Need:** {water_need}")
+            st.markdown("---")
+            st.markdown(response)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Save to database
+            conn = sqlite3.connect('krishimitra.db')
+            c = conn.cursor()
+            for day in range(7):
+                schedule_date = datetime.now().date() + timedelta(days=day)
+                c.execute('''INSERT INTO irrigation_schedule 
+                            (user_id, crop_name, schedule_date, notes)
+                            VALUES (?, ?, ?, ?)''',
+                         (user['id'], crop, schedule_date, "AI Generated Schedule"))
+            conn.commit()
+            conn.close()
+            
+            log_activity(user['id'], "Irrigation Schedule Created", crop, area, 
+                        {"stage": current_stage, "irrigation": irrigation_type})
     
-    if st.button("🔍 Diagnose", type="primary", use_container_width=True):
-        if symptoms:
-            with st.spinner("Analyzing symptoms..."):
-                diagnosis = analyze_disease_ai(crop_name, symptoms)
-                st.markdown('<div class="ai-card">', unsafe_allow_html=True)
-                st.markdown("### 🔬 AI Diagnosis")
-                st.markdown(diagnosis)
-                st.markdown('</div>', unsafe_allow_html=True)
-                
-                # Log activity
-                user = st.session_state.user_data
-                log_activity(user['id'], "Disease Diagnosis", crop_name, 0, {"symptoms": symptoms})
-        else:
-            st.warning("Please describe the symptoms")
+    # Show upcoming irrigation schedule
+    st.markdown("### Upcoming Irrigation Tasks")
+    conn = sqlite3.connect('krishimitra.db')
+    c = conn.cursor()
+    c.execute('''SELECT crop_name, schedule_date, completed, notes 
+                 FROM irrigation_schedule 
+                 WHERE user_id=? AND schedule_date >= date('now')
+                 ORDER BY schedule_date LIMIT 7''', (user['id'],))
+    schedules = c.fetchall()
+    conn.close()
+    
+    if schedules:
+        for sched in schedules:
+            col1, col2, col3 = st.columns([2, 2, 1])
+            with col1:
+                st.write(f"**{sched[0]}**")
+            with col2:
+                st.write(f"{sched[1]}")
+            with col3:
+                if sched[2]:
+                    st.success("Done")
+                else:
+                    st.warning("Pending")
+    else:
+        st.info("No irrigation schedule set. Generate one above!")
 
-def show_best_practices_enhanced():
-    """Enhanced Best Practices with detailed information"""
-    st.markdown("### 🎯 Comprehensive Farming Best Practices")
+def show_soil_health_analyzer():
+    """AI Soil Health Analysis & Recommendations"""
+    st.markdown("### Soil Health Analyzer")
+    st.markdown("Get AI-powered soil analysis and amendment recommendations")
     
-    crop_name = st.selectbox("Select Crop for Detailed Guide", list(CROP_DATABASE.keys()))
-    crop = CROP_DATABASE[crop_name]
+    user = st.session_state.user_data
     
-    st.markdown(f"# 🌾 Complete Guide: {crop_name}")
-    
-    # Basic info
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
     with col1:
-        st.metric("Expected Yield", f"{crop['expected_yield_tons']} tons/acre")
-        st.metric("Duration", f"{crop['duration_days']} days")
+        crop = st.selectbox("Crop to Plant", list(CROP_DATABASE.keys()))
+        nitrogen = st.slider("Nitrogen (N) %", 0.0, 2.0, 0.5, 0.1)
+        phosphorus = st.slider("Phosphorus (P) %", 0.0, 1.0, 0.3, 0.1)
+        potassium = st.slider("Potassium (K) %", 0.0, 2.0, 0.4, 0.1)
+    
     with col2:
-        st.metric("Market Price", crop['market_price_range'])
-        st.metric("Best Season", crop['best_season'])
-    with col3:
-        st.metric("Water Need", crop['water_requirement'])
-        st.metric("Soil Type", crop['soil_type'])
+        ph = st.slider("Soil pH", 4.0, 9.0, 6.5, 0.1)
+        organic_matter = st.slider("Organic Matter %", 0.0, 5.0, 1.5, 0.1)
+        moisture = st.slider("Moisture Level %", 0.0, 100.0, 50.0, 5.0)
+        soil_texture = st.selectbox("Soil Texture", 
+                                    ["Sandy", "Loamy", "Clay", "Sandy Loam", "Clay Loam"])
     
-    st.markdown("---")
+    st.markdown("### Optional: Upload Soil Test Report")
+    uploaded_file = st.file_uploader("Upload PDF/Image of soil test", type=['pdf', 'jpg', 'png'])
     
-    # Detailed practices if available
-    if 'detailed_practices' in crop:
-        practices = crop['detailed_practices']
+    if st.button("Analyze Soil & Get Recommendations", type="primary", use_container_width=True):
+        with st.spinner("Analyzing soil health..."):
+            crop_info = CROP_DATABASE[crop]
+            
+            prompt = f"""As a soil scientist, provide comprehensive soil analysis for {crop} cultivation:
+            
+            Current Soil Parameters:
+            - Nitrogen (N): {nitrogen}%
+            - Phosphorus (P): {phosphorus}%
+            - Potassium (K): {potassium}%
+            - pH: {ph}
+            - Organic Matter: {organic_matter}%
+            - Moisture: {moisture}%
+            - Texture: {soil_texture}
+            
+            Location: {user['tehsil']}, {user['district']}, Maharashtra
+            Crop Requirements: {crop_info.get('soil_type', 'General')}
+            
+            Provide detailed analysis:
+            1. Overall soil health rating (1-10 with explanation)
+            2. Specific deficiencies or excesses identified
+            3. Critical amendments needed:
+               - Product names (both organic and chemical)
+               - Exact quantities per acre
+               - Application timing
+               - Expected cost (in INR)
+            4. Expected yield impact (% increase) if recommendations followed
+            5. Timeline for soil improvement (short-term and long-term)
+            6. Organic vs chemical correction comparison
+            7. Maintenance plan for optimal soil health
+            8. Impact on neighboring crops/future rotations
+            
+            Be specific with local Maharashtra product names and realistic prices."""
+            
+            response = get_ai_response(prompt)
+            
+            st.markdown('<div class="ai-card">', unsafe_allow_html=True)
+            st.markdown("### Comprehensive Soil Analysis Report")
+            st.markdown(response)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Visual representation
+            st.markdown("### Soil Nutrient Levels")
+            
+            # NPK comparison
+            ideal_npk = {
+                "Nitrogen": 1.5,
+                "Phosphorus": 0.5,
+                "Potassium": 1.0
+            }
+            current_npk = {
+                "Nitrogen": nitrogen,
+                "Phosphorus": phosphorus,
+                "Potassium": potassium
+            }
+            
+            df_npk = pd.DataFrame({
+                "Nutrient": ["Nitrogen", "Phosphorus", "Potassium"],
+                "Current": [nitrogen, phosphorus, potassium],
+                "Ideal Range": [1.5, 0.5, 1.0]
+            })
+            
+            fig = go.Figure()
+            fig.add_trace(go.Bar(name='Current', x=df_npk['Nutrient'], y=df_npk['Current']))
+            fig.add_trace(go.Bar(name='Ideal', x=df_npk['Nutrient'], y=df_npk['Ideal Range']))
+            fig.update_layout(title="NPK Levels Comparison", barmode='group')
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # pH indicator
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                if ph < 6.0:
+                    st.error(f"pH {ph} - Too Acidic")
+                elif ph > 7.5:
+                    st.error(f"pH {ph} - Too Alkaline")
+                else:
+                    st.success(f"pH {ph} - Optimal")
+            
+            with col2:
+                if organic_matter < 1.0:
+                    st.error(f"OM {organic_matter}% - Very Low")
+                elif organic_matter < 2.0:
+                    st.warning(f"OM {organic_matter}% - Low")
+                else:
+                    st.success(f"OM {organic_matter}% - Good")
+            
+            with col3:
+                if moisture < 30:
+                    st.error(f"Moisture {moisture}% - Too Dry")
+                elif moisture > 70:
+                    st.error(f"Moisture {moisture}% - Too Wet")
+                else:
+                    st.success(f"Moisture {moisture}% - Optimal")
+            
+            log_activity(user['id'], "Soil Analysis", crop, 0, 
+                        {"ph": ph, "N": nitrogen, "P": phosphorus, "K": potassium})
+
+def show_yield_predictor():
+    """AI-based yield prediction"""
+    st.markdown("### Yield Predictor")
+    st.markdown("Predict your harvest yield with AI-powered analysis")
+    
+    user = st.session_state.user_data
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        crop = st.selectbox("Crop", list(CROP_DATABASE.keys()))
+        area = st.number_input("Area (Acres)", min_value=0.1, value=1.0)
+        days_after_sowing = st.number_input("Days After Sowing", 1, 200, 60)
         
-        tabs = st.tabs(list(practices.keys()))
-        
-        for idx, (practice_name, steps) in enumerate(practices.items()):
-            with tabs[idx]:
-                st.markdown(f"### {practice_name.replace('_', ' ').title()}")
-                for step_idx, step in enumerate(steps, 1):
-                    st.markdown(f"**Step {step_idx}:** {step}")
-                st.markdown("---")
+        soil_quality = st.select_slider("Soil Quality", 
+                                        options=["Poor", "Below Average", "Average", "Good", "Excellent"],
+                                        value="Average")
     
-    # Fertilizer recommendations
-    st.markdown("## 🧪 Fertilizer Recommendations")
-    tab1, tab2 = st.tabs(["Chemical Fertilizers", "Organic Fertilizers"])
+    with col2:
+        irrigation_quality = st.select_slider("Irrigation Adequacy",
+                                              options=["Insufficient", "Below Adequate", "Adequate", "Good", "Excellent"],
+                                              value="Adequate")
+        
+        pest_disease_control = st.select_slider("Pest/Disease Control",
+                                                options=["Poor", "Below Average", "Average", "Good", "Excellent"],
+                                                value="Average")
+        
+        weather_conditions = st.select_slider("Weather Conditions This Season",
+                                             options=["Very Unfavorable", "Unfavorable", "Normal", "Favorable", "Very Favorable"],
+                                             value="Normal")
+        
+        fertilizer_application = st.select_slider("Fertilizer Application",
+                                                 options=["Insufficient", "Below Recommended", "As Recommended", "Above Recommended", "Excessive"],
+                                                 value="As Recommended")
+    
+    if st.button("Predict Yield", type="primary", use_container_width=True):
+        with st.spinner("Analyzing factors and predicting yield..."):
+            crop_info = CROP_DATABASE[crop]
+            base_yield = crop_info.get("expected_yield_tons", "1.0-1.5")
+            
+            prompt = f"""As an agricultural data scientist, predict the yield for this farm:
+            
+            Crop Details:
+            - Crop: {crop}
+            - Area: {area} acres
+            - Days After Sowing: {days_after_sowing}
+            - Base Expected Yield: {base_yield} tons/acre
+            - Location: {user['tehsil']}, {user['district']}, Maharashtra
+            
+            Current Conditions:
+            - Soil Quality: {soil_quality}
+            - Irrigation: {irrigation_quality}
+            - Pest/Disease Control: {pest_disease_control}
+            - Weather: {weather_conditions}
+            - Fertilizer Application: {fertilizer_application}
+            
+            Provide:
+            1. Predicted yield (in tons and quintals)
+            2. Confidence level (High/Medium/Low) with reasoning
+            3. Yield range (best case - worst case)
+            4. Key factors positively impacting yield
+            5. Key factors negatively impacting yield
+            6. Critical interventions needed NOW to improve yield
+            7. Expected yield if all recommendations followed
+            8. Comparison with district average yield
+            9. Financial projection (estimated revenue at current market rates)
+            
+            Be realistic and data-driven. Use Maharashtra-specific benchmarks."""
+            
+            response = get_ai_response(prompt)
+            
+            st.markdown('<div class="success-card">', unsafe_allow_html=True)
+            st.markdown("### Yield Prediction Report")
+            st.markdown(response)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Visual yield comparison
+            yield_range = base_yield.split("-")
+            min_yield = float(yield_range[0])
+            max_yield = float(yield_range[-1])
+            
+            # Calculate adjustment factor based on inputs
+            quality_scores = {
+                "Poor": 0.6, "Below Average": 0.8, "Average": 1.0, 
+                "Good": 1.15, "Excellent": 1.3,
+                "Insufficient": 0.7, "Below Adequate": 0.85, "Adequate": 1.0,
+                "Below Recommended": 0.9, "As Recommended": 1.0, "Above Recommended": 1.05, "Excessive": 0.95,
+                "Very Unfavorable": 0.6, "Unfavorable": 0.8, "Normal": 1.0, "Favorable": 1.15, "Very Favorable": 1.3
+            }
+            
+            adjustment = (
+                quality_scores.get(soil_quality, 1.0) * 0.25 +
+                quality_scores.get(irrigation_quality, 1.0) * 0.25 +
+                quality_scores.get(pest_disease_control, 1.0) * 0.2 +
+                quality_scores.get(weather_conditions, 1.0) * 0.2 +
+                quality_scores.get(fertilizer_application, 1.0) * 0.1
+            )
+            
+            predicted_yield = ((min_yield + max_yield) / 2) * adjustment * area
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Predicted Yield", f"{predicted_yield:.2f} tons")
+            with col2:
+                st.metric("Per Acre", f"{predicted_yield/area:.2f} tons")
+            with col3:
+                confidence = "High" if 0.9 <= adjustment <= 1.2 else "Medium" if 0.7 <= adjustment <= 1.4 else "Low"
+                st.metric("Confidence", confidence)
+            
+            # Yield factors chart
+            factors_df = pd.DataFrame({
+                "Factor": ["Soil", "Irrigation", "Pest Control", "Weather", "Fertilizer"],
+                "Impact Score": [
+                    quality_scores.get(soil_quality, 1.0),
+                    quality_scores.get(irrigation_quality, 1.0),
+                    quality_scores.get(pest_disease_control, 1.0),
+                    quality_scores.get(weather_conditions, 1.0),
+                    quality_scores.get(fertilizer_application, 1.0)
+                ]
+            })
+            
+            fig = px.bar(factors_df, x="Factor", y="Impact Score", 
+                        title="Yield Impact Factors (1.0 = Average)",
+                        color="Impact Score",
+                        color_continuous_scale=["red", "yellow", "green"])
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # Save prediction
+            conn = sqlite3.connect('krishimitra.db')
+            c = conn.cursor()
+            c.execute('''INSERT INTO yield_predictions 
+                        (user_id, crop_name, area_acres, predicted_yield, confidence_level, factors)
+                        VALUES (?, ?, ?, ?, ?, ?)''',
+                     (user['id'], crop, area, predicted_yield, confidence, 
+                      json.dumps({
+                          "soil": soil_quality, "irrigation": irrigation_quality,
+                          "pest_control": pest_disease_control, "weather": weather_conditions,
+                          "fertilizer": fertilizer_application
+                      })))
+            conn.commit()
+            conn.close()
+            
+            log_activity(user['id'], "Yield Prediction", crop, area, 
+                        {"predicted_yield": predicted_yield, "confidence": confidence})
+
+def show_price_alert_system():
+    """Price alert system for farmers"""
+    st.markdown("### Price Alert System")
+    st.markdown("Get notified when crop prices reach your target")
+    
+    user = st.session_state.user_data
+    
+    tab1, tab2 = st.tabs(["Active Alerts", "Create Alert"])
     
     with tab1:
-        chem = crop['chemical_fertilizers']
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Urea", f"{chem['urea_kg']} kg/acre")
-        with col2:
-            st.metric("DAP", f"{chem['dap_kg']} kg/acre")
-        with col3:
-            st.metric("MOP", f"{chem['mop_kg']} kg/acre")
+        st.markdown("### Your Active Price Alerts")
         
-        st.markdown("### Application Schedule")
-        for schedule in chem['application_schedule']:
-            st.success(f"✓ {schedule}")
+        conn = sqlite3.connect('krishimitra.db')
+        c = conn.cursor()
+        c.execute('''SELECT id, commodity, target_price, alert_type, status, created_at 
+                     FROM price_alerts WHERE user_id=? ORDER BY created_at DESC''', (user['id'],))
+        alerts = c.fetchall()
+        conn.close()
+        
+        if alerts:
+            for alert in alerts:
+                col1, col2, col3, col4 = st.columns([2, 2, 2, 1])
+                with col1:
+                    st.write(f"**{alert[1]}**")
+                with col2:
+                    st.write(f"Target: ₹{alert[2]:,.0f}/quintal")
+                with col3:
+                    alert_type_display = "Above" if alert[3] == "above" else "Below"
+                    st.write(f"Alert When: {alert_type_display}")
+                with col4:
+                    if alert[4] == "Active":
+                        st.success("Active")
+                    else:
+                        st.info("Inactive")
+                st.markdown("---")
+        else:
+            st.info("No price alerts set. Create your first alert below!")
     
     with tab2:
-        org = crop['organic_fertilizers']
-        st.markdown(f"**FYM:** {org.get('fym_tons', 'N/A')} tons/acre")
-        st.markdown(f"**Vermicompost:** {org.get('vermicompost_kg', 'N/A')} kg/acre")
-        if 'neem_cake_kg' in org:
-            st.markdown(f"**Neem Cake:** {org['neem_cake_kg']} kg/acre")
-        if 'biofertilizers' in org:
-            st.markdown(f"**Biofertilizers:** {org['biofertilizers']}")
+        st.markdown("### Create New Price Alert")
+        
+        with st.form("create_alert"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                commodity = st.selectbox("Commodity", list(CROP_DATABASE.keys()))
+                crop_info = CROP_DATABASE[commodity]
+                price_range = crop_info.get("market_price_range", "₹1000-2000")
+                
+                st.info(f"Current typical range: {price_range}")
+            
+            with col2:
+                target_price = st.number_input("Target Price (₹/quintal)", 
+                                              min_value=100, value=2000, step=100)
+                alert_type = st.radio("Alert When Price Goes", ["Above", "Below"])
+            
+            notification_method = st.multiselect("Notification Method",
+                                                ["SMS", "In-App", "Email"],
+                                                default=["In-App"])
+            
+            submitted = st.form_submit_button("Create Alert", use_container_width=True, type="primary")
+            
+            if submitted:
+                conn = sqlite3.connect('krishimitra.db')
+                c = conn.cursor()
+                c.execute('''INSERT INTO price_alerts 
+                            (user_id, commodity, target_price, alert_type, status)
+                            VALUES (?, ?, ?, ?, 'Active')''',
+                         (user['id'], commodity, target_price, alert_type.lower()))
+                conn.commit()
+                conn.close()
+                
+                st.success(f"Alert created! You'll be notified when {commodity} price goes {alert_type.lower()} ₹{target_price}")
+                log_activity(user['id'], "Price Alert Created", commodity, 0, 
+                            {"target_price": target_price, "type": alert_type})
+                st.rerun()
+        
+        # Show AI price trend analysis
+        st.markdown("### AI Price Trend Analysis")
+        if st.button("Analyze Market Trends", use_container_width=True):
+            with st.spinner("Analyzing market trends..."):
+                prompt = f"""Analyze current agricultural market trends for Maharashtra:
+                
+                Provide insights on:
+                1. Current price trends for major crops (Rice, Wheat, Cotton, Tomato, Onion)
+                2. Expected price movements in next 30-60 days
+                3. Factors influencing prices (supply, demand, exports, government policy)
+                4. Best crops to sell now vs hold
+                5. Seasonal price patterns farmers should know
+                6. Tips for getting best prices at mandis
+                
+                Be specific to Maharashtra markets and current season."""
+                
+                response = get_ai_response(prompt)
+                st.markdown('<div class="ai-card">', unsafe_allow_html=True)
+                st.markdown("### Market Trends & Insights")
+                st.markdown(response)
+                st.markdown('</div>', unsafe_allow_html=True)
+
+def show_best_time_to_sell():
+    """AI-powered best time to sell predictor"""
+    st.markdown("### Best Time to Sell Predictor")
+    st.markdown("Get AI recommendations on optimal selling time for maximum profit")
     
-    # Expert tips
-    st.markdown("## 💡 Expert Tips")
-    for tip in crop.get('tips', []):
-        st.info(f"💡 {tip}")
+    user = st.session_state.user_data
     
-    # AI recommendations
-    st.markdown("---")
-    if st.button("🤖 Get AI-Powered Recommendations", use_container_width=True):
-        user = st.session_state.user_data
-        with st.spinner("Getting personalized recommendations..."):
-            recommendations = get_ai_response(
-                f"Give me specific recommendations for growing {crop_name} in {user['tehsil']}, {user['district']}"
-            )
-            st.markdown('<div class="ai-card">', unsafe_allow_html=True)
-            st.markdown("### 🤖 AI Recommendations")
-            st.markdown(recommendations)
+    col1, col2 = st.columns(2)
+    with col1:
+        crop = st.selectbox("Crop to Sell", list(CROP_DATABASE.keys()))
+        quantity = st.number_input("Quantity Available (Quintals)", min_value=1.0, value=10.0)
+        quality_grade = st.select_slider("Quality Grade",
+                                         options=["Below Standard", "Standard", "Good", "Premium", "Super Premium"],
+                                         value="Good")
+    
+    with col2:
+        harvest_date = st.date_input("Harvest/Ready Date", value=datetime.now())
+        storage_capacity = st.selectbox("Storage Availability",
+                                       ["No storage", "Limited (1 month)", "Moderate (3 months)", 
+                                        "Good (6 months)", "Excellent (1 year+)"])
+        urgency = st.select_slider("Selling Urgency",
+                                   options=["No rush", "Can wait 2-3 months", "Prefer within month", 
+                                           "Need to sell soon", "Urgent"],
+                                   value="Can wait 2-3 months")
+    
+    if st.button("Get Selling Strategy", type="primary", use_container_width=True):
+        with st.spinner("Analyzing market conditions and creating selling strategy..."):
+            crop_info = CROP_DATABASE[crop]
+            current_price_range = crop_info.get("market_price_range", "₹2000")
+            
+            prompt = f"""As an agricultural market expert, provide comprehensive selling strategy:
+            
+            Crop Details:
+            - Crop: {crop}
+            - Quantity: {quantity} quintals
+            - Quality: {quality_grade}
+            - Harvest/Ready Date: {harvest_date}
+            - Current Market Range: {current_price_range}
+            - Location: {user['tehsil']}, {user['district']}, Maharashtra
+            
+            Farmer's Situation:
+            - Storage: {storage_capacity}
+            - Urgency: {urgency}
+            
+            Provide detailed analysis:
+            1. IMMEDIATE RECOMMENDATION: Sell now vs wait? (Clear yes/no with reasoning)
+            2. Optimal selling timeline:
+               - Best case scenario
+               - Good scenario
+               - Acceptable scenario
+            3. Expected price trends for next 3-6 months with reasoning
+            4. Price targets to aim for (realistic based on quality and market)
+            5. Specific APMC mandis in Maharashtra with best rates for this crop
+            6. Storage vs immediate sale cost-benefit analysis
+            7. Risk factors to consider (market glut, weather, government policies)
+            8. Alternative selling channels (FPOs, contract farming, direct buyers)
+            9. Negotiation tips for getting best prices
+            10. Documentation and quality certification recommendations
+            
+            Consider:
+            - Current season and supply situation
+            - Upcoming festivals/events affecting demand
+            - Export opportunities if any
+            - Government procurement prices
+            
+            Be specific, actionable, and realistic about Maharashtra market conditions."""
+            
+            response = get_ai_response(prompt)
+            
+            st.markdown('<div class="success-card">', unsafe_allow_html=True)
+            st.markdown("### Your Personalized Selling Strategy")
+            st.markdown(response)
             st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Additional insights
+            st.markdown("### Quick Insights")
+            
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.markdown("#### Storage Cost Analysis")
+                monthly_storage_cost = quantity * 10  # Approximate ₹10/quintal/month
+                st.write(f"Estimated storage cost: ₹{monthly_storage_cost}/month")
+                st.write(f"3-month storage: ₹{monthly_storage_cost * 3}")
+                st.write(f"6-month storage: ₹{monthly_storage_cost * 6}")
+            
+            with col2:
+                st.markdown("#### Price Improvement Needed")
+                st.write("To justify 3-month storage:")
+                st.write(f"Need: ₹{(monthly_storage_cost * 3) / quantity:.0f}/quintal increase")
+                st.write("")
+                st.write("To justify 6-month storage:")
+                st.write(f"Need: ₹{(monthly_storage_cost * 6) / quantity:.0f}/quintal increase")
+            
+            with col3:
+                st.markdown("#### Quality Premium")
+                base_multipliers = {
+                    "Below Standard": 0.8,
+                    "Standard": 1.0,
+                    "Good": 1.15,
+                    "Premium": 1.3,
+                    "Super Premium": 1.5
+                }
+                multiplier = base_multipliers.get(quality_grade, 1.0)
+                st.write(f"Your quality grade: {quality_grade}")
+                st.write(f"Expected premium: {(multiplier - 1) * 100:.0f}%")
+            
+            # Market comparison
+            st.markdown("### Nearby Market Comparison")
+            st.info(f"""
+            **Top Markets for {crop} in {user['district']}:**
+            
+            1. Check rates at your nearest APMC mandi
+            2. Compare with neighboring district rates
+            3. Consider transportation costs
+            4. Look for bulk buyer direct deals
+            5. Explore FPO/cooperative options
+            
+            💡 Tip: Prices vary by 10-20% between mandis. Worth checking multiple options!
+            """)
+            
+            log_activity(user['id'], "Selling Strategy", crop, 0, 
+                        {"quantity": quantity, "quality": quality_grade})
 
 def show_seed_fertilizer_calculator():
     """Seed & Fertilizer Calculator"""
-    st.markdown("### 🌱 Seed & Fertilizer Calculator")
+    st.markdown("### Seed & Fertilizer Calculator")
     
     user = st.session_state.user_data
     
@@ -1481,7 +1755,7 @@ def show_seed_fertilizer_calculator():
         method = st.selectbox("Method", ["Standard", "High Density", "SRI/SCI"])
         fert_type = st.radio("Fertilizer Type", ["Chemical", "Organic", "Both"])
     
-    if st.button("Calculate 📊", type="primary"):
+    if st.button("Calculate", type="primary"):
         crop_info = CROP_DATABASE[crop]
         
         # Calculate seeds
@@ -1515,7 +1789,7 @@ def show_seed_fertilizer_calculator():
         
         # Fertilizers
         if fert_type in ["Chemical", "Both"]:
-            st.markdown("### 🧪 Chemical Fertilizers")
+            st.markdown("### Chemical Fertilizers")
             chem = crop_info["chemical_fertilizers"]
             col1, col2, col3 = st.columns(3)
             with col1:
@@ -1524,9 +1798,13 @@ def show_seed_fertilizer_calculator():
                 st.metric("DAP", f"{float(chem['dap_kg']) * area:.1f} kg")
             with col3:
                 st.metric("MOP", f"{float(chem['mop_kg']) * area:.1f} kg")
+            
+            st.markdown("#### Application Schedule")
+            for schedule in chem['application_schedule']:
+                st.success(f"✓ {schedule}")
         
         if fert_type in ["Organic", "Both"]:
-            st.markdown("### 🌱 Organic Fertilizers")
+            st.markdown("### Organic Fertilizers")
             org = crop_info["organic_fertilizers"]
             fym = org['fym_tons'].split('-')[-1]
             st.write(f"**FYM:** {float(fym) * area:.1f} tons")
@@ -1537,38 +1815,257 @@ def show_seed_fertilizer_calculator():
         log_activity(user['id'], "Seed Calculation", crop, area, {"method": method})
 
 def show_live_market_prices():
-    """Market Prices"""
-    st.markdown("### 📊 Market Prices")
+    """Live Market Prices with CEDA Integration"""
+    st.markdown("### Live Market Prices")
     user = st.session_state.user_data
     
-    commodity = st.selectbox("Select Commodity", list(CROP_DATABASE.keys()))
+    tab1, tab2, tab3 = st.tabs(["Real-Time Prices", "Price Trends", "Add Manual Price"])
     
-    manual_data = get_manual_prices(commodity=commodity, district=user['district'])
-    
-    if manual_data is not None:
-        st.success(f"✅ Price data for {commodity}")
-        latest = manual_data.iloc[0]
-        col1, col2, col3 = st.columns(3)
+    with tab1:
+        st.markdown("### Check Real-Time Market Prices")
+        
+        col1, col2 = st.columns(2)
         with col1:
-            st.metric("Min Price", f"₹{latest['min_price']:,.0f}")
+            commodity = st.selectbox("Select Commodity", list(CROP_DATABASE.keys()))
         with col2:
-            st.metric("Max Price", f"₹{latest['max_price']:,.0f}")
-        with col3:
-            st.metric("Modal Price", f"₹{latest['modal_price']:,.0f}")
+            district = st.selectbox("District", ["Maharashtra", user['district']], index=1)
         
-        st.dataframe(manual_data, use_container_width=True)
-    else:
-        crop_info = CROP_DATABASE[commodity]
-        st.info(f"Expected price: {crop_info['market_price_range']}")
+        if st.button("Fetch Latest Prices from CEDA", type="primary", use_container_width=True):
+            with st.spinner("Fetching real-time prices from CEDA Ashoka University..."):
+                # Fetch from CEDA
+                ceda_df, ceda_status = fetch_ceda_prices(commodity, district)
+                
+                if ceda_df is not None:
+                    st.success(ceda_status)
+                    
+                    # Display CEDA data
+                    st.markdown("#### CEDA Market Data")
+                    st.dataframe(ceda_df, use_container_width=True)
+                    
+                    # Show statistics
+                    if 'price' in ceda_df.columns:
+                        try:
+                            prices = pd.to_numeric(ceda_df['price'].str.replace('[^\d.]', '', regex=True), errors='coerce')
+                            prices = prices.dropna()
+                            
+                            if len(prices) > 0:
+                                col1, col2, col3 = st.columns(3)
+                                with col1:
+                                    st.metric("Average Price", f"₹{prices.mean():.0f}/quintal")
+                                with col2:
+                                    st.metric("Min Price", f"₹{prices.min():.0f}/quintal")
+                                with col3:
+                                    st.metric("Max Price", f"₹{prices.max():.0f}/quintal")
+                                
+                                # Price distribution chart
+                                fig = px.histogram(prices, nbins=10, 
+                                                 title=f"{commodity} Price Distribution",
+                                                 labels={'value': 'Price (₹/quintal)', 'count': 'Frequency'})
+                                st.plotly_chart(fig, use_container_width=True)
+                        except Exception as e:
+                            st.info("Price analysis not available")
+                    
+                    # CEDA Attribution
+                    st.markdown('<div class="info-card">', unsafe_allow_html=True)
+                    st.markdown("""
+                    **Data Source:** Centre for Economic Data and Analysis (CEDA), Ashoka University
+                    
+                    CEDA provides economic data for research and non-commercial use. 
+                    Learn more: https://ceda.ashoka.edu.in
+                    
+                    **Usage Compliance:**
+                    - Non-commercial educational use
+                    - Proper attribution provided
+                    - Rate-limited respectful access
+                    """)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                else:
+                    st.warning(ceda_status)
+                    st.info("Showing typical price range from database")
         
+        # Show database prices
+        st.markdown("### Manual Market Prices (User Contributed)")
+        manual_df = get_manual_prices(commodity=commodity, district=user['district'], days=30)
+        
+        if manual_df is not None:
+            st.dataframe(manual_df, use_container_width=True)
+            
+            # Show latest price
+            if len(manual_df) > 0:
+                latest = manual_df.iloc[0]
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Latest Min Price", f"₹{latest['min_price']:,.0f}")
+                with col2:
+                    st.metric("Latest Max Price", f"₹{latest['max_price']:,.0f}")
+                with col3:
+                    st.metric("Latest Modal Price", f"₹{latest['modal_price']:,.0f}")
+        else:
+            # Show expected price from database
+            crop_info = CROP_DATABASE[commodity]
+            st.info(f"Expected price range: {crop_info['market_price_range']}")
+        
+        # Nearest mandis
+        st.markdown("### Nearest APMC Markets")
         mandis = get_nearest_mandis(user['district'])
-        st.markdown("### 🏪 Nearest Markets")
         for mandi in mandis:
-            st.markdown(f"- 📍 {mandi}")
+            st.markdown(f"- {mandi}")
+        
+        # AI Price Analysis
+        if st.button("Get AI Price Analysis", use_container_width=True):
+            with st.spinner("Analyzing prices..."):
+                prompt = f"""Analyze current market situation for {commodity} in {user['district']}, Maharashtra:
+                
+                Provide:
+                1. Current price trend (rising/falling/stable)
+                2. Factors affecting current prices
+                3. Short-term forecast (next 2-4 weeks)
+                4. Best time to sell in current scenario
+                5. Price negotiation tips for farmers
+                
+                Be specific and actionable."""
+                
+                response = get_ai_response(prompt)
+                st.markdown('<div class="ai-card">', unsafe_allow_html=True)
+                st.markdown("### AI Price Analysis")
+                st.markdown(response)
+                st.markdown('</div>', unsafe_allow_html=True)
+    
+    with tab2:
+        st.markdown("### Price Trends & History")
+        
+        commodity_trend = st.selectbox("Select Commodity for Trends", list(CROP_DATABASE.keys()), key="trend_commodity")
+        
+        # Get historical data
+        trend_df = get_manual_prices(commodity=commodity_trend, district=user['district'], days=90)
+        
+        if trend_df is not None and len(trend_df) > 1:
+            # Convert price_date to datetime
+            trend_df['price_date'] = pd.to_datetime(trend_df['price_date'])
+            trend_df = trend_df.sort_values('price_date')
+            
+            # Create line chart
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(x=trend_df['price_date'], y=trend_df['min_price'],
+                                    mode='lines+markers', name='Min Price',
+                                    line=dict(color='red', width=2)))
+            fig.add_trace(go.Scatter(x=trend_df['price_date'], y=trend_df['modal_price'],
+                                    mode='lines+markers', name='Modal Price',
+                                    line=dict(color='green', width=3)))
+            fig.add_trace(go.Scatter(x=trend_df['price_date'], y=trend_df['max_price'],
+                                    mode='lines+markers', name='Max Price',
+                                    line=dict(color='blue', width=2)))
+            
+            fig.update_layout(title=f"{commodity_trend} Price Trends (Last 90 Days)",
+                            xaxis_title="Date",
+                            yaxis_title="Price (₹/quintal)",
+                            hovermode='x unified')
+            
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # Price statistics
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                avg_modal = trend_df['modal_price'].mean()
+                st.metric("Average Modal Price", f"₹{avg_modal:,.0f}")
+            with col2:
+                price_change = trend_df['modal_price'].iloc[-1] - trend_df['modal_price'].iloc[0]
+                st.metric("Price Change", f"₹{price_change:,.0f}", 
+                         delta=f"{(price_change/trend_df['modal_price'].iloc[0]*100):.1f}%")
+            with col3:
+                volatility = trend_df['modal_price'].std()
+                st.metric("Price Volatility", f"₹{volatility:,.0f}")
+        else:
+            st.info("Not enough historical data for trends. Add manual prices to see trends.")
+    
+    with tab3:
+        st.markdown("### Add Manual Market Price")
+        st.info("Help the community by adding latest prices from your local mandi")
+        
+        with st.form("add_manual_price"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                price_district = st.selectbox("District", list(MAHARASHTRA_LOCATIONS.keys()))
+                mandis = get_nearest_mandis(price_district)
+                market_name = st.selectbox("Market/Mandi", mandis)
+                price_commodity = st.selectbox("Commodity", list(CROP_DATABASE.keys()))
+            
+            with col2:
+                min_price = st.number_input("Minimum Price (₹/quintal)", min_value=0, value=1000, step=50)
+                max_price = st.number_input("Maximum Price (₹/quintal)", min_value=0, value=1500, step=50)
+                modal_price = st.number_input("Modal/Average Price (₹/quintal)", min_value=0, value=1250, step=50)
+            
+            arrival_quantity = st.text_input("Arrival Quantity (optional)", placeholder="e.g., 100 quintals")
+            price_date = st.date_input("Price Date", value=datetime.now())
+            
+            submitted = st.form_submit_button("Add Price Data", use_container_width=True, type="primary")
+            
+            if submitted:
+                if min_price > max_price:
+                    st.error("Minimum price cannot be greater than maximum price")
+                elif modal_price < min_price or modal_price > max_price:
+                    st.error("Modal price should be between minimum and maximum price")
+                else:
+                    add_manual_price(
+                        price_district, market_name, price_commodity,
+                        min_price, max_price, modal_price,
+                        arrival_quantity, price_date, user['id']
+                    )
+                    st.success("Price data added successfully! Thank you for contributing.")
+                    log_activity(user['id'], "Price Data Added", price_commodity, 0,
+                               {"market": market_name, "modal_price": modal_price})
+                    st.rerun()
+
+def show_complete_crop_guide():
+    """Complete crop cultivation guide"""
+    st.markdown("### Complete Crop Guide")
+    
+    crop_name = st.selectbox("Select Crop for Detailed Guide", list(CROP_DATABASE.keys()))
+    crop = CROP_DATABASE[crop_name]
+    
+    st.markdown(f"# {crop_name}")
+    
+    # Basic info
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Expected Yield", f"{crop['expected_yield_tons']} tons/acre")
+        st.metric("Duration", f"{crop['duration_days']} days")
+    with col2:
+        st.metric("Market Price", crop['market_price_range'])
+        st.metric("Best Season", crop['best_season'])
+    with col3:
+        st.metric("Water Need", crop['water_requirement'])
+        st.metric("Soil Type", crop['soil_type'])
+    
+    st.markdown("---")
+    
+    # Detailed practices
+    if 'detailed_practices' in crop:
+        practices = crop['detailed_practices']
+        
+        tabs = st.tabs(list(practices.keys()))
+        
+        for idx, (practice_name, steps) in enumerate(practices.items()):
+            with tabs[idx]:
+                st.markdown(f"### {practice_name.replace('_', ' ').title()}")
+                for step_idx, step in enumerate(steps, 1):
+                    st.markdown(f"**Step {step_idx}:** {step}")
+    
+    # Growth stages
+    if 'critical_growth_stages' in crop:
+        st.markdown("## Critical Growth Stages")
+        for stage in crop['critical_growth_stages']:
+            with st.expander(f"{stage['stage']} - Days {stage['days']}"):
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.write(f"**Water Need:** {stage['water_need']}")
+                with col2:
+                    st.write(f"**Nutrients:** {stage['nutrients']}")
 
 def show_profit_calculator():
     """Profit Calculator"""
-    st.markdown("### 💰 Profit & ROI Calculator")
+    st.markdown("### Profit & ROI Calculator")
     user = st.session_state.user_data
     
     col1, col2 = st.columns(2)
@@ -1595,7 +2092,7 @@ def show_profit_calculator():
         revenue = total_quintals * selling_price
         st.metric("Revenue", f"₹{revenue:,.0f}")
     
-    if st.button("Calculate Profit 💰", type="primary"):
+    if st.button("Calculate Profit", type="primary"):
         total_cost = seed_cost + fert_cost + pest_cost + labor + other
         profit = revenue - total_cost
         roi = (profit / total_cost * 100) if total_cost > 0 else 0
@@ -1609,166 +2106,62 @@ def show_profit_calculator():
             st.metric("ROI", f"{roi:.1f}%")
         
         if profit > 0:
-            st.success(f"✅ Profitable! ROI: {roi:.1f}%")
+            st.success(f"Profitable! ROI: {roi:.1f}%")
         else:
-            st.error("⚠️ Loss projected")
+            st.error("Loss projected")
         
         log_activity(user['id'], "Profit Calculation", crop, area, 
                     {"cost": total_cost, "profit": profit})
 
-def show_knowledge_base():
-    """Knowledge Base"""
-    st.markdown("### 📚 Crop Knowledge Base")
-    
-    search = st.text_input("🔍 Search crops...")
-    
-    for crop_name, crop in CROP_DATABASE.items():
-        if search and search.lower() not in crop_name.lower():
-            continue
-        
-        with st.expander(f"🌱 {crop_name}"):
-            col1, col2 = st.columns(2)
-            with col1:
-                st.write(f"**Duration:** {crop['duration_days']} days")
-                st.write(f"**Yield:** {crop['expected_yield_tons']} tons/acre")
-                st.write(f"**Season:** {crop['best_season']}")
-            with col2:
-                st.write(f"**Soil:** {crop['soil_type']}")
-                st.write(f"**Price:** {crop['market_price_range']}")
-
-def show_marketplace():
-    """Marketplace"""
-    st.markdown("### 🛒 Agricultural Marketplace")
-    user = st.session_state.user_data
+def show_ai_disease_diagnosis():
+    """AI Disease Diagnosis"""
+    st.markdown("### AI Disease & Pest Diagnosis")
     
     col1, col2 = st.columns(2)
     with col1:
-        filter_crop = st.selectbox("Filter Crop", ["All"] + list(CROP_DATABASE.keys()))
+        crop_name = st.selectbox("Select Crop", list(CROP_DATABASE.keys()))
     with col2:
-        filter_district = st.selectbox("Filter District", ["All"] + list(MAHARASHTRA_LOCATIONS.keys()))
+        st.info("Be specific about symptoms for accurate diagnosis")
     
-    conn = sqlite3.connect('krishimitra.db')
-    c = conn.cursor()
-    query = """SELECT ml.*, u.full_name, u.mobile, u.district 
-               FROM marketplace_listings ml 
-               JOIN users u ON ml.seller_id = u.id 
-               WHERE ml.status = 'Active'"""
-    params = []
-    if filter_crop != "All":
-        query += " AND ml.crop_name = ?"
-        params.append(filter_crop)
-    if filter_district != "All":
-        query += " AND ml.location = ?"
-        params.append(filter_district)
-    query += " ORDER BY ml.created_at DESC"
+    symptoms = st.text_area(
+        "Describe the symptoms:",
+        placeholder="E.g., Yellow spots on leaves, wilting stems...",
+        height=150
+    )
     
-    c.execute(query, params)
-    listings = c.fetchall()
-    conn.close()
-    
-    if listings:
-        st.success(f"✅ {len(listings)} listings found")
-        for listing in listings:
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                st.markdown(f"""
-                **🌾 {listing[2]}** - {listing[3]} {listing[4]}
-                
-                💰 Price: ₹{listing[5]:,.0f} per {listing[4]}
-                
-                📍 Location: {listing[13]}
-                
-                👤 Seller: {listing[11]} ({listing[12]})
-                """)
-            with col2:
-                if st.button(f"Place Bid", key=f"bid_{listing[0]}"):
-                    st.info("Bid functionality - Place your bid here")
-            st.markdown("---")
-    else:
-        st.info("No listings available")
+    if st.button("Diagnose", type="primary", use_container_width=True):
+        if symptoms:
+            with st.spinner("Analyzing symptoms..."):
+                prompt = f"""As a plant pathologist, diagnose this issue:
 
-def show_my_listings():
-    """My Listings"""
-    st.markdown("### 🛍️ My Listings")
-    user = st.session_state.user_data
-    
-    tab1, tab2 = st.tabs(["My Listings", "Create New"])
-    
-    with tab1:
-        conn = sqlite3.connect('krishimitra.db')
-        c = conn.cursor()
-        c.execute("SELECT * FROM marketplace_listings WHERE seller_id=?", (user['id'],))
-        listings = c.fetchall()
-        conn.close()
-        
-        if listings:
-            for listing in listings:
-                st.markdown(f"**{listing[2]}** - {listing[3]} {listing[4]} @ ₹{listing[5]}")
-                st.markdown("---")
+Crop: {crop_name}
+Symptoms: {symptoms}
+
+Provide:
+1. Most likely disease/pest (with confidence level)
+2. Detailed symptoms to confirm
+3. Treatment recommendations (organic and chemical)
+4. Prevention measures
+5. Expected recovery time
+
+Be specific and actionable."""
+
+                client = get_anthropic_client()
+                if client:
+                    response = get_ai_response(prompt)
+                    st.markdown('<div class="ai-card">', unsafe_allow_html=True)
+                    st.markdown("### AI Diagnosis")
+                    st.markdown(response)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                    
+                    log_activity(st.session_state.user_data['id'], "Disease Diagnosis", 
+                               crop_name, 0, {"symptoms": symptoms})
         else:
-            st.info("No listings yet")
-    
-    with tab2:
-        with st.form("new_listing"):
-            crop = st.selectbox("Crop", list(CROP_DATABASE.keys()))
-            quantity = st.number_input("Quantity", min_value=0.1)
-            unit = st.selectbox("Unit", ["Quintal", "Kg", "Tonnes"])
-            price = st.number_input("Price per Unit (₹)", min_value=1.0)
-            
-            if st.form_submit_button("Create Listing", use_container_width=True):
-                conn = sqlite3.connect('krishimitra.db')
-                c = conn.cursor()
-                c.execute("""INSERT INTO marketplace_listings 
-                            (seller_id, crop_name, quantity, unit, price_per_unit, location, status)
-                            VALUES (?, ?, ?, ?, ?, ?, 'Active')""",
-                         (user['id'], crop, quantity, unit, price, user['district']))
-                conn.commit()
-                conn.close()
-                st.success("✅ Listing created!")
-                st.rerun()
-
-def show_my_bids():
-    """My Bids"""
-    st.markdown("### 💼 My Bids")
-    user = st.session_state.user_data
-    
-    conn = sqlite3.connect('krishimitra.db')
-    c = conn.cursor()
-    c.execute("""SELECT b.*, ml.crop_name FROM bids b
-                 JOIN marketplace_listings ml ON b.listing_id = ml.id
-                 WHERE b.buyer_id = ?""", (user['id'],))
-    bids = c.fetchall()
-    conn.close()
-    
-    if bids:
-        for bid in bids:
-            st.markdown(f"**{bid[10]}** - ₹{bid[3]} - Status: {bid[8]}")
-            st.markdown("---")
-    else:
-        st.info("No bids placed yet")
-
-def show_notifications():
-    """Notifications"""
-    st.markdown("### 📱 Notifications")
-    user = st.session_state.user_data
-    
-    conn = sqlite3.connect('krishimitra.db')
-    c = conn.cursor()
-    c.execute("SELECT * FROM notifications WHERE user_id=? ORDER BY created_at DESC", (user['id'],))
-    notifications = c.fetchall()
-    conn.close()
-    
-    if notifications:
-        for notif in notifications:
-            st.info(f"{notif[2]}: {notif[3]}")
-            st.caption(f"Date: {notif[5]}")
-            st.markdown("---")
-    else:
-        st.info("No notifications")
+            st.warning("Please describe the symptoms")
 
 def show_activity_history():
     """Activity History"""
-    st.markdown("### 📊 Activity History")
+    st.markdown("### Activity History")
     user = st.session_state.user_data
     
     activities = get_user_activities(user['id'], limit=50)
@@ -1776,6 +2169,14 @@ def show_activity_history():
     if activities:
         df = pd.DataFrame(activities, columns=['Activity', 'Crop', 'Area', 'Data', 'Date'])
         st.dataframe(df, use_container_width=True)
+        
+        # Activity summary
+        st.markdown("### Activity Summary")
+        activity_counts = df['Activity'].value_counts()
+        fig = px.bar(x=activity_counts.index, y=activity_counts.values,
+                    labels={'x': 'Activity Type', 'y': 'Count'},
+                    title="Activity Distribution")
+        st.plotly_chart(fig, use_container_width=True)
     else:
         st.info("No activities yet")
 
