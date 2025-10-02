@@ -1168,7 +1168,7 @@ AGMARKNET_COMMODITY_MAP = {
     "Rice": "Paddy(Dhan)(Common)",
     "Wheat": "Wheat",
     "Cotton": "Cotton",
-    "Sugarcane": "Gur(Jaggery)",
+    "Sugarcane": "Sugarcane",  # May not be available in API
     "Maize": "Maize",
     "Tomato": "Tomato",
     "Potato": "Potato",
@@ -1176,7 +1176,7 @@ AGMARKNET_COMMODITY_MAP = {
     "Soybean": "Soyabean",
     "Groundnut": "Groundnut",
     "Pomegranate": "Pomegranate",
-    "Chilli": "Chilli Red"
+    "Chilli": "Green Chilli"  # API has "Green Chilli"
 }
 
 def fetch_agmarknet_prices(state, district, commodity):
@@ -1207,23 +1207,40 @@ def fetch_agmarknet_prices(state, district, commodity):
             if 'records' in data and len(data['records']) > 0:
                 df = pd.DataFrame(data['records'])
                 
-                # Try to filter by state, district, and commodity
+                # First, filter by commodity (most important)
                 filtered_df = df.copy()
+                if 'commodity' in df.columns:
+                    # Try exact match first
+                    commodity_exact = filtered_df[filtered_df['commodity'] == agmarknet_commodity]
+                    if len(commodity_exact) > 0:
+                        filtered_df = commodity_exact
+                    else:
+                        # Try partial match
+                        commodity_partial = filtered_df[filtered_df['commodity'].str.contains(agmarknet_commodity, case=False, na=False)]
+                        if len(commodity_partial) > 0:
+                            filtered_df = commodity_partial
                 
-                if 'state' in df.columns:
-                    filtered_df = filtered_df[filtered_df['state'].str.contains(state, case=False, na=False)]
-                
-                if 'district' in df.columns and len(filtered_df) > 0:
-                    district_filtered = filtered_df[filtered_df['district'].str.contains(district, case=False, na=False)]
-                    if len(district_filtered) > 0:
-                        filtered_df = district_filtered
-                
-                if 'commodity' in df.columns and len(filtered_df) > 0:
-                    commodity_filtered = filtered_df[filtered_df['commodity'].str.contains(agmarknet_commodity, case=False, na=False)]
-                    if len(commodity_filtered) > 0:
-                        filtered_df = commodity_filtered
+                # If we found commodity matches, try to filter by location
+                if len(filtered_df) > 0:
+                    # Try state filter
+                    if 'state' in filtered_df.columns:
+                        state_filtered = filtered_df[filtered_df['state'].str.contains(state, case=False, na=False)]
+                        if len(state_filtered) > 0:
+                            filtered_df = state_filtered
+                    
+                    # Try district filter
+                    if 'district' in filtered_df.columns:
+                        district_filtered = filtered_df[filtered_df['district'].str.contains(district, case=False, na=False)]
+                        if len(district_filtered) > 0:
+                            filtered_df = district_filtered
+                        else:
+                            # Keep all results if district doesn't match
+                            pass
                 
                 if len(filtered_df) > 0:
+                    # Sort by date if available
+                    if 'arrival_date' in filtered_df.columns:
+                        filtered_df = filtered_df.sort_values('arrival_date', ascending=False)
                     return filtered_df.head(20), f"Success: {len(filtered_df)} records found"
                 else:
                     # Show what's actually in the API
