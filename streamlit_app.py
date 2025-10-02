@@ -1439,14 +1439,29 @@ def show_main_app():
                 "📱 Notifications"
             ]
         
-        page = st.radio("Navigation", pages, key="main_navigation")
-        st.session_state.current_page = page
+        # Get the current page from session state or default to first page
+        if 'current_page' not in st.session_state or st.session_state.current_page not in pages:
+            st.session_state.current_page = pages[0]
+        
+        # Find the index of current page for radio default
+        current_index = pages.index(st.session_state.current_page) if st.session_state.current_page in pages else 0
+        
+        # Radio button with index tracking
+        page = st.radio("Navigation", pages, index=current_index, key="main_navigation")
+        
+        # Update session state when radio changes
+        if page != st.session_state.current_page:
+            st.session_state.current_page = page
         
         st.markdown("---")
         
         if st.button("🚪 Logout", use_container_width=True, key="sidebar_logout"):
             st.session_state.user_data = None
+            st.session_state.current_page = "🏠 Dashboard"
             st.rerun()
+    
+    # Use session state for routing
+    page = st.session_state.current_page
     
     # Route to pages with error handling
     try:
