@@ -1946,7 +1946,21 @@ def show_live_market_prices():
     tab1, tab2, tab3 = st.tabs(["Real-Time Prices", "Price Trends", "Add Manual Price"])
     
     with tab1:
-        st.markdown("### Check Real-Time Market Prices")
+        st.markdown("### Market Price Information")
+        
+        # Informational banner
+        st.markdown('<div class="alert-card">', unsafe_allow_html=True)
+        st.markdown("""
+        **How to Get Real-Time Prices:**
+        
+        1. **Visit Nearest APMC Mandi** - Most accurate, current prices
+        2. **Call Mandi Office** - Phone numbers listed below
+        3. **AGMARKNET Portal** - https://agmarknet.gov.in (Government official data)
+        4. **Add Manual Prices** - Help community by adding prices from your mandi visit (Tab 3)
+        
+        Note: Real-time price APIs require government authentication. This app shows typical ranges and user-contributed data.
+        """)
+        st.markdown('</div>', unsafe_allow_html=True)
         
         col1, col2 = st.columns(2)
         with col1:
@@ -1954,7 +1968,7 @@ def show_live_market_prices():
         with col2:
             district = st.selectbox("District", ["Maharashtra", user['district']], index=1)
         
-        if st.button("Fetch Latest Prices from CEDA", type="primary", use_container_width=True):
+        if st.button("Show Typical Price Ranges & Market Info", type="primary", use_container_width=True):
             with st.spinner("Fetching real-time prices from CEDA Ashoka University..."):
                 # Fetch from CEDA
                 ceda_df, ceda_status = fetch_ceda_prices(commodity, district)
