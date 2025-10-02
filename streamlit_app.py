@@ -1840,6 +1840,7 @@ Debug Message: {debug_msg}
                 st.success("✅ Live Government Data")
                 
                 try:
+                    # Show summary metrics from first record
                     latest = data.iloc[0]
                     
                     col1, col2, col3 = st.columns(3)
@@ -1850,9 +1851,30 @@ Debug Message: {debug_msg}
                     with col3:
                         st.metric("Modal Price", f"₹{latest.get('modal_price', 'N/A')}")
                     
-                    st.dataframe(data.head(10), use_container_width=True)
+                    # Show location info
+                    st.info(f"**Market:** {latest.get('market', 'N/A')} | **District:** {latest.get('district', 'N/A')} | **State:** {latest.get('state', 'N/A')}")
                     
-                except:
+                    # Display full data table with relevant columns
+                    display_cols = ['commodity', 'market', 'district', 'state', 'min_price', 'max_price', 'modal_price', 'arrival_date']
+                    available_cols = [col for col in display_cols if col in data.columns]
+                    
+                    st.markdown("### 📋 Detailed Price Data")
+                    st.dataframe(data[available_cols].head(20), use_container_width=True)
+                    
+                    # Check if Maharashtra data exists
+                    if 'state' in data.columns:
+                        maharashtra_count = data[data['state'].str.contains('Maharashtra', case=False, na=False)].shape[0]
+                        pune_count = data[data['district'].str.contains(user['district'], case=False, na=False)].shape[0] if 'district' in data.columns else 0
+                        
+                        if maharashtra_count == 0:
+                            st.warning(f"⚠️ No Maharashtra data found. Showing {len(data)} records from other states.")
+                        elif pune_count == 0:
+                            st.info(f"ℹ️ Found {maharashtra_count} Maharashtra records, but none from {user['district']} district.")
+                        else:
+                            st.success(f"✅ Showing {pune_count} records from {user['district']}, Maharashtra")
+                    
+                except Exception as e:
+                    st.error(f"Error displaying data: {e}")
                     st.dataframe(data.head(10))
             else:
                 st.warning("⚠️ Live data unavailable. Showing sample trend:")
