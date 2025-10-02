@@ -23,13 +23,16 @@ st.set_page_config(
 @st.cache_resource
 def get_anthropic_client():
     try:
-        # Try to get from secrets, use demo mode if not available
-        api_key = st.secrets.get("ANTHROPIC_API_KEY", "")
+        from anthropic import Anthropic
+        # Access secrets correctly
+        api_key = st.secrets["ANTHROPIC_API_KEY"]
         if api_key:
-            from anthropic import Anthropic
             return Anthropic(api_key=api_key)
         return None
-    except:
+    except (KeyError, FileNotFoundError):
+        return None
+    except Exception as e:
+        st.error(f"Error initializing AI: {str(e)}")
         return None
 
 # Custom CSS with improved styling
