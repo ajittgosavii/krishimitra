@@ -1163,14 +1163,33 @@ def send_whatsapp_notification(mobile, message):
 # API FUNCTIONS
 # ====================
 
+# Commodity name mapping for Agmarknet API
+AGMARKNET_COMMODITY_MAP = {
+    "Rice": "Paddy(Dhan)(Common)",
+    "Wheat": "Wheat",
+    "Cotton": "Cotton",
+    "Sugarcane": "Gur(Jaggery)",
+    "Maize": "Maize",
+    "Tomato": "Tomato",
+    "Potato": "Potato",
+    "Onion": "Onion",
+    "Soybean": "Soyabean",
+    "Groundnut": "Groundnut",
+    "Pomegranate": "Pomegranate",
+    "Chilli": "Chilli Red"
+}
+
 def fetch_agmarknet_prices(state, district, commodity):
-    """Fetch from Agmarknet - with debugging"""
+    """Fetch from Agmarknet - with commodity mapping"""
     try:
         # Try to get API key from secrets
         try:
             api_key = st.secrets["api_keys"]["data_gov_in"]
         except:
             return None, "API key not found in secrets"
+        
+        # Map commodity name to Agmarknet naming
+        agmarknet_commodity = AGMARKNET_COMMODITY_MAP.get(commodity, commodity)
             
         url = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
         
@@ -1178,20 +1197,33 @@ def fetch_agmarknet_prices(state, district, commodity):
             "api-key": api_key,
             "format": "json",
             "filters[state]": state,
-            "filters[district]": district,
-            "filters[commodity]": commodity,
-            "limit": 30
+            "filters[commodity]": agmarknet_commodity,
+            "limit": 50
         }
         
+        # Try without district filter first, as district names might not match exactly
         response = requests.get(url, params=params, timeout=10)
         
         # Return status and response for debugging
         if response.status_code == 200:
             data = response.json()
             if 'records' in data and len(data['records']) > 0:
-                return pd.DataFrame(data['records']), f"Success: {len(data['records'])} records"
+                # Filter by district in the dataframe
+                df = pd.DataFrame(data['records'])
+                
+                # Try to filter by district (case-insensitive)
+                if 'district' in df.columns:
+                    district_matches = df[df['district'].str.lower().str.contains(district.lower(), na=False)]
+                    if len(district_matches) > 0:
+                        return district_matches, f"Success: {len(district_matches)} records for {district}"
+                    else:
+                        # Return all Maharashtra records if no exact district match
+                        return df, f"Success: {len(df)} records (all Maharashtra, no exact district match)"
+                else:
+                    return df, f"Success: {len(df)} records"
             else:
-                return None, f"No records found. Response keys: {list(data.keys())}"
+                # Show what commodities might be available
+                return None, f"No records for '{agmarknet_commodity}'. Try: Onion, Tomato, Potato, or Wheat"
         else:
             return None, f"HTTP {response.status_code}: {response.text[:200]}"
         
