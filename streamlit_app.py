@@ -1030,15 +1030,20 @@ def init_database():
                   phone TEXT,
                   district TEXT)''')
     
-    # Storage facilities table  
-    c.execute('''CREATE TABLE IF NOT EXISTS storage_facilities
+    # Manual market prices table
+    c.execute('''CREATE TABLE IF NOT EXISTS manual_market_prices
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                  facility_name TEXT,
-                  storage_type TEXT,
-                  capacity TEXT,
-                  rate_per_quintal REAL,
-                  location TEXT,
-                  phone TEXT)''')
+                  district TEXT,
+                  market_name TEXT,
+                  commodity TEXT,
+                  min_price REAL,
+                  max_price REAL,
+                  modal_price REAL,
+                  arrival_quantity TEXT,
+                  price_date DATE,
+                  updated_by INTEGER,
+                  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  FOREIGN KEY(updated_by) REFERENCES users(id))''')
     
     conn.commit()
     conn.close()
@@ -1138,6 +1143,54 @@ def create_notification(user_id, notification_type, message):
     
     conn.commit()
     conn.close()
+
+def add_manual_price(district, market_name, commodity, min_price, max_price, modal_price, 
+                     arrival_quantity, price_date, updated_by):
+    """Add manual market price"""
+    conn = sqlite3.connect('krishimitra.db')
+    c = conn.cursor()
+    
+    c.execute('''INSERT INTO manual_market_prices 
+                 (district, market_name, commodity, min_price, max_price, modal_price, 
+                  arrival_quantity, price_date, updated_by)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+              (district, market_name, commodity, min_price, max_price, modal_price, 
+               arrival_quantity, price_date, updated_by))
+    
+    conn.commit()
+    conn.close()
+
+def get_manual_prices(commodity=None, district=None, days=30):
+    """Get manual market prices"""
+    conn = sqlite3.connect('krishimitra.db')
+    c = conn.cursor()
+    
+    query = '''SELECT district, market_name, commodity, min_price, max_price, modal_price, 
+               arrival_quantity, price_date, updated_at 
+               FROM manual_market_prices 
+               WHERE price_date >= date('now', '-' || ? || ' days')'''
+    
+    params = [days]
+    
+    if commodity:
+        query += " AND commodity = ?"
+        params.append(commodity)
+    
+    if district:
+        query += " AND district = ?"
+        params.append(district)
+    
+    query += " ORDER BY price_date DESC, updated_at DESC"
+    
+    c.execute(query, params)
+    results = c.fetchall()
+    conn.close()
+    
+    if results:
+        return pd.DataFrame(results, columns=['district', 'market', 'commodity', 'min_price', 
+                                               'max_price', 'modal_price', 'arrival_quantity', 
+                                               'price_date', 'updated_at'])
+    return None
 
 # ====================
 # NOTIFICATION FUNCTIONS
@@ -1782,7 +1835,7 @@ def show_seed_fertilizer_calculator():
             create_notification(user['id'], "calculation", msg)
 
 def show_live_market_prices():
-    """Market prices - FIXED"""
+    """Market prices - Manual + API"""
     st.markdown("### 📊 Live Market Prices / थेट बाजारभाव")
     
     user = st.session_state.user_data
@@ -1795,146 +1848,183 @@ def show_live_market_prices():
     except:
         pass
     
-    if not api_key_configured:
-        st.warning("⚠️ **API Key Not Configured**")
-        st.info("""
-        **To get live market prices:**
+    # Tabs for View and Update prices
+    tab1, tab2 = st.tabs(["📊 View Prices", "✏️ Update Prices"])
+    
+    with tab1:
+        col1, col2 = st.columns(2)
         
-        1. Register at https://data.gov.in/
-        2. Get your API key from API Console
-        3. Add to Streamlit Secrets:
-        ```
-        [api_keys]
-        data_gov_in = "YOUR_API_KEY"
-        ```
+        with col1:
+            commodity = st.selectbox("Commodity / वस्तू", list(CROP_DATABASE.keys()), key="market_price_commodity")
         
-        **Alternative Sources:**
-        - eNAM Portal: https://www.enam.gov.in/
-        - Agmarknet: https://agmarknet.gov.in/
-        - Call Helpline: 1800-270-0224
-        """)
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        commodity = st.selectbox("Commodity / वस्तू", list(CROP_DATABASE.keys()), key="market_price_commodity")
-    
-    with col2:
-        st.info(f"📍 {user['district']} District")
-    
-    # Add Maharashtra only filter
-    only_maharashtra = st.checkbox("Show only Maharashtra data", value=True, key="maha_only_filter")
-    
-    if st.button("Fetch Prices / भाव आणा", type="primary", key="market_price_fetch"):
-        with st.spinner("Fetching from Agmarknet..."):
-            data, debug_msg = fetch_agmarknet_prices("Maharashtra", user['district'], commodity)
+        with col2:
+            st.info(f"📍 {user['district']} District")
+        
+        # Try to get manual prices first
+        manual_data = get_manual_prices(commodity=commodity, district=user['district'], days=30)
+        
+        if manual_data is not None and len(manual_data) > 0:
+            st.success("✅ Maharashtra Market Data (Manually Updated)")
             
-            # Filter for Maharashtra only if checkbox is selected
-            if data is not None and only_maharashtra:
-                if 'state' in data.columns:
-                    maha_data = data[data['state'].str.contains('Maharashtra', case=False, na=False)]
-                    if len(maha_data) == 0:
-                        st.warning(f"⚠️ No Maharashtra data available for {commodity}")
-                        st.info(f"API has data from other states. Uncheck 'Show only Maharashtra data' to view all available prices.")
-                        data = None
-                    else:
-                        data = maha_data
-                        debug_msg = f"Filtered to {len(maha_data)} Maharashtra records"
+            # Show latest price
+            latest = manual_data.iloc[0]
             
-            # Show debug information
-            with st.expander("🔍 API Debug Information"):
-                st.code(f"""
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Min Price", f"₹{latest['min_price']:,.0f}")
+            with col2:
+                st.metric("Max Price", f"₹{latest['max_price']:,.0f}")
+            with col3:
+                st.metric("Modal Price", f"₹{latest['modal_price']:,.0f}")
+            
+            # Show market info
+            st.info(f"**Market:** {latest['market']} | **District:** {latest['district']} | **Date:** {latest['price_date']}")
+            
+            # Show all manual data
+            st.markdown("### 📋 Recent Price Data")
+            st.dataframe(manual_data, use_container_width=True)
+            
+            st.caption(f"Last updated: {latest['updated_at']}")
+            
+        else:
+            st.info(f"No manually updated prices for {commodity} in {user['district']}. Trying API...")
+            
+            # Fallback to API
+            only_maharashtra = st.checkbox("Show only Maharashtra data", value=True, key="maha_only_filter")
+            
+            if st.button("Fetch from API / API भाव आणा", type="primary", key="market_price_fetch"):
+                with st.spinner("Fetching from Agmarknet..."):
+                    data, debug_msg = fetch_agmarknet_prices("Maharashtra", user['district'], commodity)
+                    
+                    # Filter for Maharashtra only if checkbox is selected
+                    if data is not None and only_maharashtra:
+                        if 'state' in data.columns:
+                            maha_data = data[data['state'].str.contains('Maharashtra', case=False, na=False)]
+                            if len(maha_data) == 0:
+                                st.warning(f"⚠️ No Maharashtra data available for {commodity}")
+                                st.info(f"API has data from other states. Uncheck 'Show only Maharashtra data' to view all available prices.")
+                                data = None
+                            else:
+                                data = maha_data
+                                debug_msg = f"Filtered to {len(maha_data)} Maharashtra records"
+                    
+                    # Show debug information
+                    with st.expander("🔍 API Debug Information"):
+                        st.code(f"""
 API Endpoint: https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070
 State: Maharashtra
 District: {user['district']}
 Commodity: {commodity}
 Debug Message: {debug_msg}
-                """)
-            
-            if data is not None and len(data) > 0:
-                st.success("✅ Live Government Data")
-                
-                try:
-                    # Show summary metrics from first record
-                    latest = data.iloc[0]
+                        """)
                     
-                    col1, col2, col3 = st.columns(3)
-                    with col1:
-                        st.metric("Min Price", f"₹{latest.get('min_price', 'N/A')}")
-                    with col2:
-                        st.metric("Max Price", f"₹{latest.get('max_price', 'N/A')}")
-                    with col3:
-                        st.metric("Modal Price", f"₹{latest.get('modal_price', 'N/A')}")
-                    
-                    # Show location info
-                    st.info(f"**Market:** {latest.get('market', 'N/A')} | **District:** {latest.get('district', 'N/A')} | **State:** {latest.get('state', 'N/A')}")
-                    
-                    # Display full data table with relevant columns
-                    display_cols = ['commodity', 'market', 'district', 'state', 'min_price', 'max_price', 'modal_price', 'arrival_date']
-                    available_cols = [col for col in display_cols if col in data.columns]
-                    
-                    st.markdown("### 📋 Detailed Price Data")
-                    st.dataframe(data[available_cols].head(20), use_container_width=True)
-                    
-                    # Check if Maharashtra data exists
-                    if 'state' in data.columns:
-                        maharashtra_count = data[data['state'].str.contains('Maharashtra', case=False, na=False)].shape[0]
-                        pune_count = data[data['district'].str.contains(user['district'], case=False, na=False)].shape[0] if 'district' in data.columns else 0
+                    if data is not None and len(data) > 0:
+                        st.success("✅ Live Government Data")
                         
-                        if maharashtra_count == 0:
-                            st.warning(f"⚠️ No Maharashtra data found. Showing {len(data)} records from other states.")
-                        elif pune_count == 0:
-                            st.info(f"ℹ️ Found {maharashtra_count} Maharashtra records, but none from {user['district']} district.")
-                        else:
-                            st.success(f"✅ Showing {pune_count} records from {user['district']}, Maharashtra")
+                        try:
+                            # Show summary metrics from first record
+                            latest = data.iloc[0]
+                            
+                            col1, col2, col3 = st.columns(3)
+                            with col1:
+                                st.metric("Min Price", f"₹{latest.get('min_price', 'N/A')}")
+                            with col2:
+                                st.metric("Max Price", f"₹{latest.get('max_price', 'N/A')}")
+                            with col3:
+                                st.metric("Modal Price", f"₹{latest.get('modal_price', 'N/A')}")
+                            
+                            # Show location info
+                            st.info(f"**Market:** {latest.get('market', 'N/A')} | **District:** {latest.get('district', 'N/A')} | **State:** {latest.get('state', 'N/A')}")
+                            
+                            # Display full data table with relevant columns
+                            display_cols = ['commodity', 'market', 'district', 'state', 'min_price', 'max_price', 'modal_price', 'arrival_date']
+                            available_cols = [col for col in display_cols if col in data.columns]
+                            
+                            st.markdown("### 📋 Detailed Price Data")
+                            st.dataframe(data[available_cols].head(20), use_container_width=True)
+                            
+                            # Check if Maharashtra data exists
+                            if 'state' in data.columns:
+                                maharashtra_count = data[data['state'].str.contains('Maharashtra', case=False, na=False)].shape[0]
+                                pune_count = data[data['district'].str.contains(user['district'], case=False, na=False)].shape[0] if 'district' in data.columns else 0
+                                
+                                if maharashtra_count == 0:
+                                    st.warning(f"⚠️ No Maharashtra data found. Showing {len(data)} records from other states.")
+                                elif pune_count == 0:
+                                    st.info(f"ℹ️ Found {maharashtra_count} Maharashtra records, but none from {user['district']} district.")
+                                else:
+                                    st.success(f"✅ Showing {pune_count} records from {user['district']}, Maharashtra")
+                            
+                        except Exception as e:
+                            st.error(f"Error displaying data: {e}")
+                            st.dataframe(data.head(10))
+                    else:
+                        st.warning("⚠️ Live data unavailable. Showing sample trend:")
+                        
+                        # Show why data is unavailable
+                        st.error(f"**Reason:** {debug_msg}")
+                        
+                        # Show crop price info from database
+                        crop_info = CROP_DATABASE[commodity]
+                        st.markdown(f"**Expected Market Price Range:** {crop_info['market_price_range']}")
+                        
+                        sample_data = generate_sample_prices(commodity)
+                        
+                        fig = px.line(sample_data, x='Date', y='Price (₹/quintal)',
+                                     title=f'{commodity} Price Trend (Sample Data)')
+                        st.plotly_chart(fig, use_container_width=True)
+                        
+                        st.info("""
+                        **📱 Get Real-Time Prices:**
+                        
+                        - **eNAM App**: Download from Play Store/App Store
+                        - **Agmarknet Website**: https://agmarknet.gov.in/
+                        - **Maharashtra APMC**: https://mahaapmc.gov.in/
+                        - **Toll-Free**: 1800-270-0224
+                        """)
+                        
+                        # Show nearest mandis
+                        st.markdown("### 🪙 Nearest Markets")
+                        mandis = get_nearest_mandis(user['district'])
+                        for mandi in mandis[:3]:
+                            st.markdown(f"- 📍 {mandi}")
+    
+    with tab2:
+        st.markdown("### ✏️ Update Market Prices Manually")
+        st.info("Add current market prices from official sources like Agmarknet.gov.in or your local APMC")
+        
+        with st.form("add_manual_price"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                district = st.selectbox("District", list(MAHARASHTRA_LOCATIONS.keys()), key="manual_district")
+                market_name = st.text_input("Market Name (e.g., Pune APMC)", key="manual_market")
+                commodity = st.selectbox("Commodity", list(CROP_DATABASE.keys()), key="manual_commodity")
+                arrival_quantity = st.text_input("Arrival Quantity (e.g., 250 quintals)", key="manual_quantity")
+            
+            with col2:
+                min_price = st.number_input("Min Price (₹/quintal)", min_value=0.0, step=10.0, key="manual_min")
+                max_price = st.number_input("Max Price (₹/quintal)", min_value=0.0, step=10.0, key="manual_max")
+                modal_price = st.number_input("Modal Price (₹/quintal)", min_value=0.0, step=10.0, key="manual_modal")
+                price_date = st.date_input("Price Date", value=datetime.now().date(), key="manual_date")
+            
+            submitted = st.form_submit_button("💾 Save Price Data", use_container_width=True)
+            
+            if submitted:
+                if market_name and min_price > 0 and max_price > 0 and modal_price > 0:
+                    add_manual_price(district, market_name, commodity, min_price, max_price, 
+                                   modal_price, arrival_quantity, price_date, user['id'])
                     
-                except Exception as e:
-                    st.error(f"Error displaying data: {e}")
-                    st.dataframe(data.head(10))
-            else:
-                st.warning("⚠️ Live data unavailable. Showing sample trend:")
-                
-                # Show why data is unavailable
-                st.error(f"**Reason:** {debug_msg}")
-                
-                st.info("""
-                **Possible Issues:**
-                - API key might be invalid or expired
-                - Commodity name spelling doesn't match API database
-                - No recent data available for this district/commodity
-                - API rate limits reached
-                
-                **Try:**
-                - Check commodity spelling (use "Sugarcane" not "Sugar Cane")
-                - Try a different commodity
-                - Wait a few minutes and try again
-                - Visit https://agmarknet.gov.in/ directly
-                """)
-                
-                # Show crop price info from database
-                crop_info = CROP_DATABASE[commodity]
-                st.markdown(f"**Expected Market Price Range:** {crop_info['market_price_range']}")
-                
-                sample_data = generate_sample_prices(commodity)
-                
-                fig = px.line(sample_data, x='Date', y='Price (₹/quintal)',
-                             title=f'{commodity} Price Trend (Sample Data)')
-                st.plotly_chart(fig, use_container_width=True)
-                
-                st.info("""
-                **📱 Get Real-Time Prices:**
-                
-                - **eNAM App**: Download from Play Store/App Store
-                - **Agmarknet Website**: https://agmarknet.gov.in/
-                - **SMS Service**: Send SMS to get prices
-                - **Toll-Free**: 1800-270-0224
-                """)
-                
-                # Show nearest mandis
-                st.markdown("### 🪙 Nearest Markets")
-                mandis = get_nearest_mandis(user['district'])
-                for mandi in mandis[:3]:
-                    st.markdown(f"- 📍 {mandi}")
+                    st.success(f"✅ Price data saved for {commodity} at {market_name}")
+                    log_activity(user['id'], "Manual Price Update", commodity, 0, {
+                        "market": market_name,
+                        "modal_price": modal_price,
+                        "date": str(price_date)
+                    })
+                    st.balloons()
+                    st.rerun()
+                else:
+                    st.error("Please fill all required fields with valid prices")
 
 def show_best_practices():
     """Best practices"""
