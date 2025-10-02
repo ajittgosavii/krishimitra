@@ -24,12 +24,28 @@ st.set_page_config(
 def get_anthropic_client():
     try:
         from anthropic import Anthropic
-        # Access secrets correctly
-        api_key = st.secrets["ANTHROPIC_API_KEY"]
+        
+        # Try both locations for the API key
+        api_key = None
+        try:
+            # First try root level
+            api_key = st.secrets["ANTHROPIC_API_KEY"]
+        except KeyError:
+            try:
+                # Then try under api_keys section
+                api_key = st.secrets["api_keys"]["ANTHROPIC_API_KEY"]
+            except KeyError:
+                st.error("Could not find ANTHROPIC_API_KEY in secrets. Check your secrets configuration.")
+                return None
+        
         if api_key:
             return Anthropic(api_key=api_key)
-        return None
-    except (KeyError, FileNotFoundError):
+        else:
+            st.error("ANTHROPIC_API_KEY is empty")
+            return None
+            
+    except ImportError:
+        st.error("anthropic package not installed. Check requirements.txt and redeploy.")
         return None
     except Exception as e:
         st.error(f"Error initializing AI: {str(e)}")
