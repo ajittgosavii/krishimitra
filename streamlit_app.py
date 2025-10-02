@@ -1373,8 +1373,8 @@ def show_main_app():
         
         # Notification toggle
         st.markdown("### 🔔 Notifications")
-        enable_sms = st.checkbox("SMS Alerts", value=st.session_state.notifications_enabled)
-        enable_whatsapp = st.checkbox("WhatsApp Alerts")
+        enable_sms = st.checkbox("SMS Alerts", value=st.session_state.notifications_enabled, key="sidebar_sms")
+        enable_whatsapp = st.checkbox("WhatsApp Alerts", key="sidebar_whatsapp")
         
         if enable_sms or enable_whatsapp:
             st.session_state.notifications_enabled = True
@@ -1414,52 +1414,61 @@ def show_main_app():
                 "📱 Notifications"
             ]
         
-        page = st.radio("Navigation", pages)
+        page = st.radio("Navigation", pages, key="main_navigation")
         st.session_state.current_page = page
         
         st.markdown("---")
         
-        if st.button("🚪 Logout", use_container_width=True):
+        if st.button("🚪 Logout", use_container_width=True, key="sidebar_logout"):
             st.session_state.user_data = None
             st.rerun()
     
-    # Route to pages
-    if page == "🏠 Dashboard":
-        show_dashboard()
-    elif page == "🌱 Seed & Fertilizer":
-        show_seed_fertilizer_calculator()
-    elif page == "📊 Market Prices":
-        show_live_market_prices()
-    elif page == "🎯 Best Practices":
-        show_best_practices()
-    elif page == "💰 Profit Calculator":
-        show_profit_calculator()
-    elif page == "📚 Crop Knowledge":
-        show_knowledge_base()
-    elif page == "📅 Seasonal Planner":
-        show_seasonal_planner()
-    elif page == "🌡️ Weather & Soil":
-        show_weather_soil()
-    elif page == "🛍️ Marketplace":
-        show_marketplace()
-    elif page == "🛒 My Listings":
-        show_my_listings()
-    elif page == "💼 My Bids":
-        show_my_bids()
-    elif page == "🚚 Transportation":
-        show_transportation()
-    elif page == "🏪 Storage Facilities":
-        show_storage_facilities()
-    elif page == "🏛️ Govt Schemes":
-        show_government_schemes_page()
-    elif page == "🪙 Nearest Mandis":
-        show_nearest_mandis()
-    elif page == "🐛 Disease Guide":
-        show_disease_guide()
-    elif page == "📱 Notifications":
-        show_notifications()
-    elif page == "📊 My Activity":
-        show_activity_history()
+    # Route to pages with error handling
+    try:
+        if page == "🏠 Dashboard":
+            show_dashboard()
+        elif page == "🌱 Seed & Fertilizer":
+            show_seed_fertilizer_calculator()
+        elif page == "📊 Market Prices":
+            show_live_market_prices()
+        elif page == "🎯 Best Practices":
+            show_best_practices()
+        elif page == "💰 Profit Calculator":
+            show_profit_calculator()
+        elif page == "📚 Crop Knowledge":
+            show_knowledge_base()
+        elif page == "📅 Seasonal Planner":
+            show_seasonal_planner()
+        elif page == "🌡️ Weather & Soil":
+            show_weather_soil()
+        elif page == "🛍️ Marketplace":
+            show_marketplace()
+        elif page == "🛒 My Listings":
+            show_my_listings()
+        elif page == "💼 My Bids":
+            show_my_bids()
+        elif page == "🚚 Transportation":
+            show_transportation()
+        elif page == "🏪 Storage Facilities":
+            show_storage_facilities()
+        elif page == "🏛️ Govt Schemes":
+            show_government_schemes_page()
+        elif page == "🪙 Nearest Mandis":
+            show_nearest_mandis()
+        elif page == "🐛 Disease Guide":
+            show_disease_guide()
+        elif page == "📱 Notifications":
+            show_notifications()
+        elif page == "📊 My Activity":
+            show_activity_history()
+        else:
+            # Default to dashboard if page not found
+            show_dashboard()
+    except Exception as e:
+        st.error(f"Error loading page: {str(e)}")
+        st.info("Please try refreshing the page or contact support.")
+        if st.button("🔄 Refresh", key="error_refresh"):
+            st.rerun()
 
 def show_dashboard():
     """Dashboard - FIXED"""
@@ -1510,22 +1519,22 @@ def show_dashboard():
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        if st.button("🌱 Calculate Seeds", use_container_width=True):
+        if st.button("🌱 Calculate Seeds", use_container_width=True, key="dash_btn_seeds"):
             st.session_state.current_page = "🌱 Seed & Fertilizer"
             st.rerun()
     
     with col2:
-        if st.button("📊 Check Prices", use_container_width=True):
+        if st.button("📊 Check Prices", use_container_width=True, key="dash_btn_prices"):
             st.session_state.current_page = "📊 Market Prices"
             st.rerun()
     
     with col3:
-        if st.button("🛍️ Browse Marketplace", use_container_width=True):
+        if st.button("🛍️ Browse Marketplace", use_container_width=True, key="dash_btn_market"):
             st.session_state.current_page = "🛍️ Marketplace"
             st.rerun()
     
     with col4:
-        if st.button("💰 Profit Calculator", use_container_width=True):
+        if st.button("💰 Profit Calculator", use_container_width=True, key="dash_btn_profit"):
             st.session_state.current_page = "💰 Profit Calculator"
             st.rerun()
 
@@ -1539,14 +1548,14 @@ def show_seed_fertilizer_calculator():
     col1, col2 = st.columns(2)
     
     with col1:
-        crop = st.selectbox("Select Crop / पीक निवडा", list(CROP_DATABASE.keys()))
-        area = st.number_input("Area (Acres) / क्षेत्र (एकर)", min_value=0.1, value=1.0, step=0.1)
+        crop = st.selectbox("Select Crop / पीक निवडा", list(CROP_DATABASE.keys()), key="seed_calc_crop")
+        area = st.number_input("Area (Acres) / क्षेत्र (एकर)", min_value=0.1, value=1.0, step=0.1, key="seed_calc_area")
     
     with col2:
-        planting_method = st.selectbox("Method / पद्धत", ["Standard", "High Density", "SRI/SCI"])
-        fert_type = st.radio("Fertilizer / खत", ["Chemical / रासायनिक", "Organic / सेंद्रिय", "Both / दोन्ही"])
+        planting_method = st.selectbox("Method / पद्धत", ["Standard", "High Density", "SRI/SCI"], key="seed_calc_method")
+        fert_type = st.radio("Fertilizer / खत", ["Chemical / रासायनिक", "Organic / सेंद्रिय", "Both / दोन्ही"], key="seed_calc_fert")
     
-    if st.button("Calculate / मोजणी करा", type="primary"):
+    if st.button("Calculate / मोजणी करा", type="primary", key="seed_calc_button"):
         crop_info = CROP_DATABASE[crop]
         
         # Log activity - FIXED
@@ -1679,12 +1688,12 @@ def show_live_market_prices():
     col1, col2 = st.columns(2)
     
     with col1:
-        commodity = st.selectbox("Commodity / वस्तू", list(CROP_DATABASE.keys()))
+        commodity = st.selectbox("Commodity / वस्तू", list(CROP_DATABASE.keys()), key="market_price_commodity")
     
     with col2:
         st.info(f"📍 {user['district']} District")
     
-    if st.button("Fetch Prices / भाव आणा", type="primary"):
+    if st.button("Fetch Prices / भाव आणा", type="primary", key="market_price_fetch"):
         with st.spinner("Fetching from Agmarknet..."):
             data = fetch_agmarknet_prices("Maharashtra", user['district'], commodity)
             
