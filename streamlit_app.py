@@ -625,6 +625,59 @@ def get_user_activities(user_id, limit=10):
     conn.close()
     return activities
 
+def get_manual_prices(commodity=None, district=None, days=30):
+    conn = sqlite3.connect('krishimitra.db')
+    c = conn.cursor()
+    query = '''SELECT district, market_name, commodity, min_price, max_price, modal_price, 
+               arrival_quantity, price_date, updated_at 
+               FROM manual_market_prices 
+               WHERE price_date >= date('now', '-' || ? || ' days')'''
+    params = [days]
+    if commodity:
+        query += " AND commodity = ?"
+        params.append(commodity)
+    if district:
+        query += " AND district = ?"
+        params.append(district)
+    query += " ORDER BY price_date DESC"
+    c.execute(query, params)
+    results = c.fetchall()
+    conn.close()
+    if results:
+        return pd.DataFrame(results, columns=['district', 'market', 'commodity', 'min_price', 
+                                               'max_price', 'modal_price', 'arrival_quantity', 
+                                               'price_date', 'updated_at'])
+    return None
+
+def add_manual_price(district, market_name, commodity, min_price, max_price, modal_price, 
+                     arrival_quantity, price_date, updated_by):
+    conn = sqlite3.connect('krishimitra.db')
+    c = conn.cursor()
+    c.execute('''INSERT INTO manual_market_prices 
+                 (district, market_name, commodity, min_price, max_price, modal_price, 
+                  arrival_quantity, price_date, updated_by)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+              (district, market_name, commodity, min_price, max_price, modal_price, 
+               arrival_quantity, price_date, updated_by))
+    conn.commit()
+    conn.close()
+
+def get_nearest_mandis(district):
+    mandis = {
+        "Pune": ["Pune Market Yard", "Baramati APMC", "Daund APMC", "Indapur APMC", "Shirur APMC"],
+        "Nagpur": ["Nagpur Cotton Market", "Kamptee APMC", "Umred APMC", "Hinganghat APMC"],
+        "Nashik": ["Nashik APMC", "Lasalgaon APMC", "Sinnar APMC", "Niphad APMC"],
+        "Mumbai Suburban": ["Vashi APMC", "Turbhe Market", "Kalyan APMC"],
+        "Thane": ["Kalyan APMC", "Bhiwandi Market", "Thane Market"],
+        "Aurangabad": ["Aurangabad APMC", "Paithan Market", "Gangapur Market"],
+        "Solapur": ["Solapur APMC", "Barshi Market", "Pandharpur APMC"],
+        "Kolhapur": ["Kolhapur APMC", "Ichalkaranji Market", "Kagal APMC"],
+        "Ahmednagar": ["Ahmednagar APMC", "Sangamner Market", "Rahuri Market"],
+        "Satara": ["Satara APMC", "Karad Market", "Phaltan APMC"],
+        "Sangli": ["Sangli APMC", "Miraj Market", "Tasgaon APMC"]
+    }
+    return mandis.get(district, ["Contact District Agriculture Office", "Visit nearest APMC"])
+
 # AI Helper Functions
 def get_ai_response(user_message, context=""):
     """Get AI response from Claude"""
