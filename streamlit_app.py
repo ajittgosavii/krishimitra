@@ -773,6 +773,12 @@ def hash_password(password):
 
 def create_user(username, password, full_name, mobile, email, district, tehsil, village, farm_size, user_type='Farmer'):
     try:
+        # Strip whitespace from inputs
+        username = username.strip()
+        password = password.strip()
+        full_name = full_name.strip()
+        mobile = mobile.strip()
+        
         conn = sqlite3.connect('krishimitra.db')
         c = conn.cursor()
         password_hash = hash_password(password)
@@ -782,30 +788,49 @@ def create_user(username, password, full_name, mobile, email, district, tehsil, 
                   (username, password_hash, full_name, mobile, email, district, tehsil, village, farm_size, user_type))
         conn.commit()
         user_id = c.lastrowid
+        
+        # Verify the user was actually created
+        c.execute('SELECT username FROM users WHERE id=?', (user_id,))
+        verification = c.fetchone()
         conn.close()
-        return True, user_id
+        
+        if verification:
+            return True, user_id
+        else:
+            return False, "User creation verification failed"
+            
     except sqlite3.IntegrityError:
         return False, "Username already exists"
     except Exception as e:
         return False, str(e)
 
 def authenticate_user(username, password):
-    conn = sqlite3.connect('krishimitra.db')
-    c = conn.cursor()
-    password_hash = hash_password(password)
-    c.execute('''SELECT id, username, full_name, mobile, email, district, tehsil, village, farm_size_acres, user_type
-                 FROM users WHERE username=? AND password_hash=?''',
-              (username, password_hash))
-    user = c.fetchone()
-    conn.close()
-    if user:
-        return {
-            'id': user[0], 'username': user[1], 'full_name': user[2],
-            'mobile': user[3], 'email': user[4], 'district': user[5],
-            'tehsil': user[6], 'village': user[7], 'farm_size': user[8],
-            'user_type': user[9]
-        }
-    return None
+    try:
+        # Strip whitespace
+        username = username.strip()
+        password = password.strip()
+        
+        conn = sqlite3.connect('krishimitra.db')
+        c = conn.cursor()
+        password_hash = hash_password(password)
+        
+        c.execute('''SELECT id, username, full_name, mobile, email, district, tehsil, village, farm_size_acres, user_type
+                     FROM users WHERE username=? AND password_hash=?''',
+                  (username, password_hash))
+        user = c.fetchone()
+        conn.close()
+        
+        if user:
+            return {
+                'id': user[0], 'username': user[1], 'full_name': user[2],
+                'mobile': user[3], 'email': user[4], 'district': user[5],
+                'tehsil': user[6], 'village': user[7], 'farm_size': user[8],
+                'user_type': user[9]
+            }
+        return None
+    except Exception as e:
+        st.error(f"Authentication error: {str(e)}")
+        return None
 
 def log_activity(user_id, activity_type, crop_name, area_acres, activity_data):
     try:
