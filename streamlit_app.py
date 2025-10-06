@@ -2606,120 +2606,120 @@ def show_live_market_prices():
     tab1, tab2, tab3 = st.tabs(["Real-Time Prices", "Price Trends", "Add Manual Price"])
     
     with tab1:
-    st.markdown("### Market Price Information")
-    
-    # Informational banner
-    st.markdown('<div class="alert-card">', unsafe_allow_html=True)
-    st.markdown("""
-    **How to Get Real-Time Prices:**
-    
-    1. **Visit Nearest APMC Mandi** - Most accurate, current prices
-    2. **Call Mandi Office** - Phone numbers listed below
-    3. **AGMARKNET Portal** - https://agmarknet.gov.in (Government official data)
-    4. **Add Manual Prices** - Help community by adding prices from your mandi visit (Tab 3)
-    
-    Note: Real-time price APIs require government authentication. This app shows typical ranges and user-contributed data.
-    """)
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        commodity = st.selectbox("Select Commodity", list(CROP_DATABASE.keys()))
-    with col2:
-        # Create district list with Maharashtra first, then user's district, then all others
-        all_districts = ["Maharashtra (All)"] + [user['district']] + [d for d in sorted(MAHARASHTRA_LOCATIONS.keys()) if d != user['district']]
-        district = st.selectbox("District", all_districts, index=1)
-    
-    # Clean the district name for processing (outside the columns block)
-    selected_district = district.replace(" (All)", "") if district != "Maharashtra (All)" else "Maharashtra"
-    
-    if st.button("Show Typical Price Ranges & Market Info", type="primary", use_container_width=True):
-        with st.spinner("Fetching real-time prices from CEDA Ashoka University..."):
-            # Fetch from CEDA
-            ceda_df, ceda_status = fetch_ceda_prices(commodity, selected_district)
-            
-            if ceda_df is not None:
-                st.success(ceda_status)
+        st.markdown("### Market Price Information")
+        
+        # Informational banner
+        st.markdown('<div class="alert-card">', unsafe_allow_html=True)
+        st.markdown("""
+        **How to Get Real-Time Prices:**
+        
+        1. **Visit Nearest APMC Mandi** - Most accurate, current prices
+        2. **Call Mandi Office** - Phone numbers listed below
+        3. **AGMARKNET Portal** - https://agmarknet.gov.in (Government official data)
+        4. **Add Manual Prices** - Help community by adding prices from your mandi visit (Tab 3)
+        
+        Note: Real-time price APIs require government authentication. This app shows typical ranges and user-contributed data.
+        """)
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            commodity = st.selectbox("Select Commodity", list(CROP_DATABASE.keys()))
+        with col2:
+            # Create district list with Maharashtra first, then user's district, then all others
+            all_districts = ["Maharashtra (All)"] + [user['district']] + [d for d in sorted(MAHARASHTRA_LOCATIONS.keys()) if d != user['district']]
+            district = st.selectbox("District", all_districts, index=1)
+        
+        # Clean the district name for processing (outside the columns block)
+        selected_district = district.replace(" (All)", "") if district != "Maharashtra (All)" else "Maharashtra"
+        
+        if st.button("Show Typical Price Ranges & Market Info", type="primary", use_container_width=True):
+            with st.spinner("Fetching real-time prices from CEDA Ashoka University..."):
+                # Fetch from CEDA
+                ceda_df, ceda_status = fetch_ceda_prices(commodity, selected_district)
                 
-                # Display CEDA data
-                st.markdown("#### CEDA Market Data")
-                st.dataframe(ceda_df, use_container_width=True)
-                
-                # Show statistics
-                if 'price' in ceda_df.columns:
-                    try:
-                        prices = pd.to_numeric(ceda_df['price'].str.replace('[^\d.]', '', regex=True), errors='coerce')
-                        prices = prices.dropna()
-                        
-                        if len(prices) > 0:
-                            col1, col2, col3 = st.columns(3)
-                            with col1:
-                                st.metric("Average Price", f"₹{prices.mean():.0f}/quintal")
-                            with col2:
-                                st.metric("Min Price", f"₹{prices.min():.0f}/quintal")
-                            with col3:
-                                st.metric("Max Price", f"₹{prices.max():.0f}/quintal")
+                if ceda_df is not None:
+                    st.success(ceda_status)
+                    
+                    # Display CEDA data
+                    st.markdown("#### CEDA Market Data")
+                    st.dataframe(ceda_df, use_container_width=True)
+                    
+                    # Show statistics
+                    if 'price' in ceda_df.columns:
+                        try:
+                            prices = pd.to_numeric(ceda_df['price'].str.replace('[^\d.]', '', regex=True), errors='coerce')
+                            prices = prices.dropna()
                             
-                            # Price distribution chart
-                            fig = px.histogram(prices, nbins=10, 
-                                             title=f"{commodity} Price Distribution",
-                                             labels={'value': 'Price (₹/quintal)', 'count': 'Frequency'})
-                            st.plotly_chart(fig, use_container_width=True)
-                    except Exception as e:
-                        st.info("Price analysis not available")
-                
-                # CEDA Attribution
-                st.markdown('<div class="info-card">', unsafe_allow_html=True)
-                st.markdown("""
-                **Data Source:** Centre for Economic Data and Analysis (CEDA), Ashoka University
-                
-                CEDA provides economic data for research and non-commercial use. 
-                Learn more: https://ceda.ashoka.edu.in
-                
-                **Usage Compliance:**
-                - Non-commercial educational use
-                - Proper attribution provided
-                - Rate-limited respectful access
-                """)
-                st.markdown('</div>', unsafe_allow_html=True)
-            else:
-                st.warning(ceda_status)
-                
-                # Generate sample prices as fallback
-                st.info("Showing estimated market prices based on typical ranges")
-                # Use selected district if not "Maharashtra", otherwise use user's district
-                district_for_sample = user['district'] if selected_district == "Maharashtra" else selected_district
-                sample_df = generate_sample_prices(commodity, district_for_sample)
-                
-                st.markdown("#### Estimated Market Prices (Last 7 Days)")
-                st.dataframe(sample_df, use_container_width=True)
-                
-                # Calculate and show statistics
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric("Average Modal Price", f"₹{sample_df['modal_price'].mean():.0f}/quintal")
-                with col2:
-                    st.metric("Typical Min", f"₹{sample_df['min_price'].mean():.0f}/quintal")
-                with col3:
-                    st.metric("Typical Max", f"₹{sample_df['max_price'].mean():.0f}/quintal")
-                
-                # Price chart
-                fig = px.line(sample_df, x='date', y=['min_price', 'modal_price', 'max_price'],
-                             title=f"{commodity} Price Trends (Estimated)",
-                             labels={'value': 'Price (₹/quintal)', 'date': 'Date'})
-                st.plotly_chart(fig, use_container_width=True)
-                
-                st.markdown('<div class="alert-card">', unsafe_allow_html=True)
-                st.markdown("""
-                **Note:** These are estimated prices based on typical market ranges.
-                
-                **For real-time prices:**
-                - Visit your nearest APMC mandi
-                - Call mandi offices (numbers below)
-                - Check AGMARKNET: https://agmarknet.gov.in
-                - Add manual prices in Tab 3 to help the community
-                """)
-                st.markdown('</div>', unsafe_allow_html=True)
+                            if len(prices) > 0:
+                                col1, col2, col3 = st.columns(3)
+                                with col1:
+                                    st.metric("Average Price", f"₹{prices.mean():.0f}/quintal")
+                                with col2:
+                                    st.metric("Min Price", f"₹{prices.min():.0f}/quintal")
+                                with col3:
+                                    st.metric("Max Price", f"₹{prices.max():.0f}/quintal")
+                                
+                                # Price distribution chart
+                                fig = px.histogram(prices, nbins=10, 
+                                                title=f"{commodity} Price Distribution",
+                                                labels={'value': 'Price (₹/quintal)', 'count': 'Frequency'})
+                                st.plotly_chart(fig, use_container_width=True)
+                        except Exception as e:
+                            st.info("Price analysis not available")
+                    
+                    # CEDA Attribution
+                    st.markdown('<div class="info-card">', unsafe_allow_html=True)
+                    st.markdown("""
+                    **Data Source:** Centre for Economic Data and Analysis (CEDA), Ashoka University
+                    
+                    CEDA provides economic data for research and non-commercial use. 
+                    Learn more: https://ceda.ashoka.edu.in
+                    
+                    **Usage Compliance:**
+                    - Non-commercial educational use
+                    - Proper attribution provided
+                    - Rate-limited respectful access
+                    """)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                else:
+                    st.warning(ceda_status)
+                    
+                    # Generate sample prices as fallback
+                    st.info("Showing estimated market prices based on typical ranges")
+                    # Use selected district if not "Maharashtra", otherwise use user's district
+                    district_for_sample = user['district'] if selected_district == "Maharashtra" else selected_district
+                    sample_df = generate_sample_prices(commodity, district_for_sample)
+                    
+                    st.markdown("#### Estimated Market Prices (Last 7 Days)")
+                    st.dataframe(sample_df, use_container_width=True)
+                    
+                    # Calculate and show statistics
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("Average Modal Price", f"₹{sample_df['modal_price'].mean():.0f}/quintal")
+                    with col2:
+                        st.metric("Typical Min", f"₹{sample_df['min_price'].mean():.0f}/quintal")
+                    with col3:
+                        st.metric("Typical Max", f"₹{sample_df['max_price'].mean():.0f}/quintal")
+                    
+                    # Price chart
+                    fig = px.line(sample_df, x='date', y=['min_price', 'modal_price', 'max_price'],
+                                title=f"{commodity} Price Trends (Estimated)",
+                                labels={'value': 'Price (₹/quintal)', 'date': 'Date'})
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                    st.markdown('<div class="alert-card">', unsafe_allow_html=True)
+                    st.markdown("""
+                    **Note:** These are estimated prices based on typical market ranges.
+                    
+                    **For real-time prices:**
+                    - Visit your nearest APMC mandi
+                    - Call mandi offices (numbers below)
+                    - Check AGMARKNET: https://agmarknet.gov.in
+                    - Add manual prices in Tab 3 to help the community
+                    """)
+                    st.markdown('</div>', unsafe_allow_html=True)
     
     # Show database prices
     st.markdown("### Manual Market Prices (User Contributed)")
