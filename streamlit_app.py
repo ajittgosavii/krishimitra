@@ -49,93 +49,359 @@ def get_anthropic_client():
         return None
 
 # Custom CSS
+# Custom CSS with Professional Design
 st.markdown("""
     <style>
+    /* Global Styles */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    
+    * {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    /* Main Container */
+    .main {
+        background: linear-gradient(135deg, #f5f7fa 0%, #e8f5e9 100%);
+    }
+    
+    /* Header */
     .main-header {
-        font-size: 2.8rem;
-        font-weight: bold;
-        color: #2E7D32;
+        font-size: 3rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #2E7D32 0%, #388E3C 50%, #4CAF50 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         text-align: center;
-        padding: 1.5rem;
-        background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
-        border-radius: 15px;
-        margin-bottom: 1rem;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
     }
+    
     .sub-header {
-        font-size: 1.8rem;
-        color: #558B2F;
-        font-weight: bold;
-        margin-top: 1.5rem;
-        border-bottom: 3px solid #4CAF50;
+        font-size: 2rem;
+        color: #1B5E20;
+        font-weight: 700;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
         padding-bottom: 0.5rem;
+        border-bottom: 4px solid #4CAF50;
+        display: inline-block;
     }
+    
+    /* Sidebar Styling */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #1B5E20 0%, #2E7D32 100%);
+    }
+    
+    [data-testid="stSidebar"] * {
+        color: white !important;
+    }
+    
+    [data-testid="stSidebar"] .stButton button {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        width: 100%;
+        text-align: left;
+        margin: 4px 0;
+    }
+    
+    [data-testid="stSidebar"] .stButton button:hover {
+        background-color: rgba(255, 255, 255, 0.25);
+        border-color: rgba(255, 255, 255, 0.4);
+        transform: translateX(5px);
+    }
+    
+    [data-testid="stSidebar"] button[kind="primary"] {
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
+        color: #1B5E20 !important;
+        font-weight: 700;
+        border: 2px solid #FFD700;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
+    
+    /* Tabs Styling - HIGHLY VISIBLE */
+    .stTabs {
+        background-color: white;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        margin: 1rem 0;
+    }
+    
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background-color: #E8F5E9;
+        padding: 8px;
+        border-radius: 10px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        height: 50px;
+        background-color: white;
+        border-radius: 8px;
+        padding: 0 24px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #2E7D32;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+    
+    .stTabs [data-baseweb="tab"]:hover {
+        background-color: #C8E6C9;
+        border-color: #4CAF50;
+        transform: translateY(-2px);
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%) !important;
+        color: white !important;
+        border-color: #2E7D32 !important;
+        box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+    }
+    
+    /* Cards */
     .info-card {
-        background-color: #F1F8E9;
+        background: white;
         padding: 1.5rem;
         border-radius: 12px;
         border-left: 6px solid #4CAF50;
         margin: 1rem 0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        transition: transform 0.2s, box-shadow 0.2s;
     }
+    
+    .info-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+    
     .price-card {
-        background-color: #E8F5E9;
-        padding: 1.2rem;
-        border-radius: 10px;
-        margin: 0.5rem 0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-        transition: transform 0.2s;
-    }
-    .price-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.12);
-    }
-    .ai-card {
-        background-color: #E3F2FD;
+        background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%);
         padding: 1.5rem;
         border-radius: 12px;
-        border-left: 6px solid #2196F3;
-        margin: 1rem 0;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    .alert-card {
-        background-color: #FFF3E0;
-        padding: 1.2rem;
-        border-radius: 10px;
-        border-left: 5px solid #FF9800;
-        margin: 0.8rem 0;
-    }
-    .success-card {
-        background-color: #E8F5E9;
-        padding: 1.2rem;
-        border-radius: 10px;
-        border-left: 5px solid #4CAF50;
-        margin: 0.8rem 0;
-    }
-    .critical-alert {
-        background-color: #FFEBEE;
-        padding: 1.2rem;
-        border-radius: 10px;
-        border-left: 5px solid #F44336;
-        margin: 0.8rem 0;
-        font-weight: bold;
-    }
-    .chat-message {
-        padding: 1rem;
-        border-radius: 10px;
         margin: 0.5rem 0;
-        animation: fadeIn 0.3s;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
     }
+    
+    .price-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+        border-color: #4CAF50;
+    }
+    
+    .ai-card {
+        background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+        padding: 2rem;
+        border-radius: 16px;
+        border-left: 6px solid #2196F3;
+        margin: 1.5rem 0;
+        box-shadow: 0 6px 16px rgba(33, 150, 243, 0.2);
+    }
+    
+    .alert-card {
+        background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border-left: 5px solid #FF9800;
+        margin: 1rem 0;
+        box-shadow: 0 4px 12px rgba(255, 152, 0, 0.2);
+    }
+    
+    .success-card {
+        background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border-left: 5px solid #4CAF50;
+        margin: 1rem 0;
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+    }
+    
+    .critical-alert {
+        background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border-left: 5px solid #F44336;
+        margin: 1rem 0;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3); }
+        50% { box-shadow: 0 6px 20px rgba(244, 67, 54, 0.5); }
+    }
+    
+    /* Chat Messages */
+    .chat-message {
+        padding: 1.25rem;
+        border-radius: 12px;
+        margin: 0.75rem 0;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
     .user-message {
-        background-color: #E3F2FD;
+        background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
         border-left: 4px solid #2196F3;
     }
+    
     .assistant-message {
-        background-color: #F1F8E9;
+        background: linear-gradient(135deg, #F1F8E9 0%, #DCEDC8 100%);
         border-left: 4px solid #4CAF50;
     }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+    
+    @keyframes slideIn {
+        from { 
+            opacity: 0; 
+            transform: translateY(20px); 
+        }
+        to { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+    }
+    
+    /* Buttons */
+    .stButton button {
+        background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+    }
+    
+    .stButton button:hover {
+        background: linear-gradient(135deg, #66BB6A 0%, #81C784 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(76, 175, 80, 0.4);
+    }
+    
+    .stButton button[kind="primary"] {
+        background: linear-gradient(135deg, #2196F3 0%, #42A5F5 100%);
+        box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+    }
+    
+    .stButton button[kind="primary"]:hover {
+        background: linear-gradient(135deg, #42A5F5 0%, #64B5F6 100%);
+        box-shadow: 0 6px 12px rgba(33, 150, 243, 0.4);
+    }
+    
+    /* Metrics */
+    [data-testid="stMetricValue"] {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2E7D32;
+    }
+    
+    [data-testid="stMetricLabel"] {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #666;
+    }
+    
+    /* Forms */
+    .stTextInput input, .stTextArea textarea, .stSelectbox select, .stNumberInput input {
+        border: 2px solid #E0E0E0;
+        border-radius: 8px;
+        padding: 0.75rem;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+    
+    .stTextInput input:focus, .stTextArea textarea:focus, .stSelectbox select:focus, .stNumberInput input:focus {
+        border-color: #4CAF50;
+        box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+    }
+    
+    /* Expanders */
+    .streamlit-expanderHeader {
+        background-color: #F1F8E9;
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 1rem;
+        border: 2px solid #C8E6C9;
+        transition: all 0.3s ease;
+    }
+    
+    .streamlit-expanderHeader:hover {
+        background-color: #E8F5E9;
+        border-color: #4CAF50;
+    }
+    
+    /* DataFrames */
+    .dataframe {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    /* Info/Warning/Error boxes */
+    .stAlert {
+        border-radius: 10px;
+        padding: 1rem;
+        border-left: 5px solid;
+    }
+    
+    /* Dividers */
+    hr {
+        margin: 2rem 0;
+        border: none;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #4CAF50, transparent);
+    }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #66BB6A 0%, #81C784 100%);
+    }
+    
+    /* Loading Spinner */
+    .stSpinner > div {
+        border-top-color: #4CAF50 !important;
+    }
+    
+    /* File Uploader */
+    [data-testid="stFileUploader"] {
+        background-color: #F1F8E9;
+        border: 2px dashed #4CAF50;
+        border-radius: 12px;
+        padding: 2rem;
+    }
+    
+    /* Success/Error Messages */
+    .element-container .stSuccess, .element-container .stError, .element-container .stWarning, .element-container .stInfo {
+        border-radius: 10px;
+        padding: 1rem;
+        font-weight: 500;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -678,7 +944,77 @@ CROP_DATABASE = {
         "export_potential": "High",
         "storage_duration_months": "3-6",
         "processing_options": ["Dehydration", "Powder", "Flakes"]
+    },
+    "Sugarcane": {
+    "seed_rate_kg_per_acre": "3000-4000 setts (3 budded)",
+    "spacing": "90cm x 60cm (furrow to furrow)",
+    "water_requirement": "607-850 mm",
+    "duration_days": "300-365",
+    "expected_yield_tons": "40-60",
+    "best_season": "Year-round (Main: Feb-March, Oct-Nov)",
+    "soil_type": "Deep, well-drained loamy soil",
+    "market_price_range": "₹2800-3500/ton",
+    "msp_2024": "₹3150/ton",
+    "insurance_premium_percent": "2.0",
+    "critical_growth_stages": [
+        {"stage": "Germination", "days": "0-30", "water_need": "High", "nutrients": "Minimal"},
+        {"stage": "Tillering/Grand Growth", "days": "60-120", "water_need": "Critical", "nutrients": "High N"},
+        {"stage": "Formation", "days": "150-240", "water_need": "Critical", "nutrients": "Balanced NPK"},
+        {"stage": "Maturation", "days": "270-330", "water_need": "Medium", "nutrients": "High K"},
+        {"stage": "Ripening", "days": "335-365", "water_need": "Low", "nutrients": "Minimal"}
+    ],
+    "detailed_practices": {
+        "land_preparation": [
+            "Deep plowing 2-3 times to 30-45 cm depth",
+            "Prepare furrows at 90 cm spacing",
+            "Apply FYM 10-15 tons per acre 3-4 weeks before planting",
+            "Level the field properly for uniform water distribution",
+            "Make ridges and furrows for planting and irrigation"
+        ],
+        "sett_preparation": [
+            "Select healthy, disease-free canes of 8-10 months age",
+            "Cut into 3-budded setts (45-60 cm length)",
+            "Treat setts with fungicide (Carbendazim @ 2g/liter)",
+            "Dip setts in insecticide solution to prevent termite attack",
+            "Plant within 24 hours of cutting for best germination"
+        ],
+        "planting": [
+            "Plant during Feb-March (Adsali) or Oct-Nov (Suru)",
+            "Place setts end-to-end in furrows at 60 cm spacing",
+            "Cover setts with 5-8 cm soil",
+            "Apply light irrigation immediately after planting",
+            "Gap filling within 3-4 weeks with reserve setts"
+        ]
+    },
+    "chemical_fertilizers": {
+        "urea_kg": "260",
+        "dap_kg": "130",
+        "mop_kg": "65",
+        "total_npk": "140:60:60 kg/acre",
+        "application_schedule": [
+            "Basal: 25% N + 100% P + 50% K at planting",
+            "30 days: 25% N (earthing up)",
+            "60 days: 25% N + 25% K",
+            "90 days: 25% N + 25% K"
+        ]
+    },
+    "organic_fertilizers": {
+        "fym_tons": "10-15",
+        "vermicompost_kg": "1000-1500",
+        "neem_cake_kg": "200-250",
+        "green_manure": "Sunhemp or Dhaincha - intercrop in early stage",
+        "biofertilizers": "Azotobacter + PSB + Trichoderma @ 2 kg each per acre",
+    },
+    "common_pests": ["Early Shoot Borer", "Top Borer", "White Grub", "Termites", "Woolly Aphid"],
+    "common_diseases": ["Red Rot", "Smut", "Wilt", "Rust", "Grassy Shoot"],
+    "rotation_crops": ["Wheat", "Chickpea", "Soybean", "Onion"],
+    "intercrop_options": ["Potato", "Onion", "Garlic", "Cabbage", "Cauliflower (in early stage)"],
+    "export_potential": "Low (mainly domestic consumption)",
+    "storage_duration_months": "Harvest and crush immediately",
+    "processing_options": ["Sugar mills", "Jaggery (Gur)", "Khandsari", "Ethanol production"]
     }
+    
+    
 }
 
 # Government Schemes Database - NEW ADDITION
@@ -1089,8 +1425,8 @@ Always be:
 # Main Application
 def main():
     init_database()
-    st.markdown('<div class="main-header">🌾 KrishiMitra Maharashtra - AI Powered</div>', unsafe_allow_html=True)
-    st.markdown("### संपूर्ण कृषी व्यवस्थापन प्रणाली | Complete Agriculture Management System with AI")
+    st.markdown('<div class="main-header">🌾 KrishiMitra Maharashtra</div>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; font-size: 1.3rem; color: #558B2F; font-weight: 600; margin-top: -1rem;">संपूर्ण कृषी व्यवस्थापन प्रणाली | AI-Powered Complete Agriculture Management System</p>', unsafe_allow_html=True)
     
     if st.session_state.user_data is None:
         show_auth_page()
@@ -1187,10 +1523,15 @@ def show_main_app():
     user = st.session_state.user_data
     
     with st.sidebar:
-        st.markdown(f"### {user['full_name']}")
-        st.markdown(f"**{user['village']}, {user['tehsil']}**")
-        st.markdown(f"**Farm: {user['farm_size']} acres**")
-        st.markdown("---")
+        st.markdown(f"""
+        <div style='background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px; margin-bottom: 1rem;'>
+            <h3 style='margin: 0; color: #FFD700;'>👤 {user['full_name']}</h3>
+            <p style='margin: 0.5rem 0 0 0; font-size: 0.9rem;'>📍 {user['village']}, {user['tehsil']}</p>
+            <p style='margin: 0.3rem 0 0 0; font-size: 0.9rem;'>🌾 Farm: {user['farm_size']} acres</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("---")
         
         # Define pages based on user type
         if user.get('user_type') == 'Farmer':
