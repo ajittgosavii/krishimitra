@@ -1866,10 +1866,16 @@ def show_crop_growth_tracker():
                         if current_stage:
                             st.markdown("#### Current Stage Requirements")
                             col1, col2 = st.columns(2)
+                            col1, col2 = st.columns(2)
                             with col1:
-                                st.write(f"**Water Need:** {current_stage['water_need']}")
+                                commodity = st.selectbox("Select Commodity", list(CROP_DATABASE.keys()))
                             with col2:
-                                st.write(f"**Nutrients:** {current_stage['nutrients']}")
+                                # Create district list with Maharashtra first, then user's district, then all others
+                                all_districts = ["Maharashtra (All)"] + [user['district']] + [d for d in sorted(MAHARASHTRA_LOCATIONS.keys()) if d != user['district']]
+                                district = st.selectbox("District", all_districts, index=1)
+                                
+                                # Clean the district name for processing (remove " (All)" suffix)
+                                selected_district = district.replace(" (All)", "") if district != "Maharashtra (All)" else "Maharashtra"
                     
                     # AI recommendations for this stage
                     if st.button(f"Get AI Recommendations for {crop[1]}", key=f"ai_{crop[0]}"):
@@ -2625,7 +2631,7 @@ def show_live_market_prices():
         if st.button("Show Typical Price Ranges & Market Info", type="primary", use_container_width=True):
             with st.spinner("Fetching real-time prices from CEDA Ashoka University..."):
                 # Fetch from CEDA
-                ceda_df, ceda_status = fetch_ceda_prices(commodity, district)
+                ceda_df, ceda_status = fetch_ceda_prices(commodity, selected_district)
                 
                 if ceda_df is not None:
                     st.success(ceda_status)
@@ -2676,7 +2682,7 @@ def show_live_market_prices():
                     
                     # Generate sample prices as fallback
                     st.info("Showing estimated market prices based on typical ranges")
-                    sample_df = generate_sample_prices(commodity, user['district'])
+                    sample_df = generate_sample_prices(commodity, selected_district if selected_district != "Maharashtra" else user['district'])
                     
                     st.markdown("#### Estimated Market Prices (Last 7 Days)")
                     st.dataframe(sample_df, use_container_width=True)
@@ -2710,7 +2716,7 @@ def show_live_market_prices():
         
         # Show database prices
         st.markdown("### Manual Market Prices (User Contributed)")
-        manual_df = get_manual_prices(commodity=commodity, district=user['district'], days=30)
+        manual_df = get_manual_prices(commodity=commodity, district=selected_district if selected_district != "Maharashtra" else None, days=30)
         
         if manual_df is not None:
             st.dataframe(manual_df, use_container_width=True)
