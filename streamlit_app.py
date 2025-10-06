@@ -1530,8 +1530,8 @@ def show_main_app():
             <p style='margin: 0.3rem 0 0 0; font-size: 0.9rem;'>🌾 Farm: {user['farm_size']} acres</p>
         </div>
         """, unsafe_allow_html=True)
-    
-    st.markdown("---")
+        
+        st.markdown("---")
         
         # Define pages based on user type
         if user.get('user_type') == 'Farmer':
