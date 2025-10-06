@@ -992,7 +992,7 @@ def show_auth_page():
                 else:
                     st.warning("Please fill all fields")
     
-    with tab2:
+with tab2:
     st.markdown("### Create Account")
     
     # Location selection OUTSIDE the form
