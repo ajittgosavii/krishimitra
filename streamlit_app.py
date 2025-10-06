@@ -992,62 +992,62 @@ def show_auth_page():
                 else:
                     st.warning("Please fill all fields")
     
-with tab2:
-    st.markdown("### Create Account")
-    
-    # Location selection OUTSIDE the form
-    st.markdown("#### Location Details")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        district = st.selectbox("District*", ["Select"] + list(MAHARASHTRA_LOCATIONS.keys()))
-    with col2:
-        if district != "Select":
-            tehsils = list(MAHARASHTRA_LOCATIONS[district]["tehsils"].keys())
-            tehsil = st.selectbox("Tehsil*", ["Select"] + tehsils)
-        else:
-            tehsil = st.selectbox("Tehsil*", ["First select district"], disabled=True)
-    with col3:
-        if district != "Select" and tehsil != "Select" and tehsil not in ["First select district"]:
-            villages = MAHARASHTRA_LOCATIONS[district]["tehsils"][tehsil]
-            village = st.selectbox("Village*", ["Select"] + villages)
-        else:
-            village = st.selectbox("Village*", ["First select tehsil"], disabled=True)
-    
-    st.markdown("---")
-    
-    # Now the form with other details
-    with st.form("register_form"):
-        st.markdown("#### Personal & Farm Details")
-        col1, col2 = st.columns(2)
+    with tab2:
+        st.markdown("### Create Account")
+        
+        # Location selection OUTSIDE the form
+        st.markdown("#### Location Details")
+        col1, col2, col3 = st.columns(3)
         with col1:
-            new_username = st.text_input("Username*")
-            new_password = st.text_input("Password* (min 6 chars)", type="password")
-            full_name = st.text_input("Full Name*")
-            mobile = st.text_input("Mobile* (10 digits)")
+            district = st.selectbox("District*", ["Select"] + list(MAHARASHTRA_LOCATIONS.keys()))
         with col2:
-            email = st.text_input("Email")
-            user_type = st.selectbox("I am a", ["Farmer", "Buyer/Trader", "Equipment Provider"])
-            farm_size = st.number_input("Farm Size (Acres)", min_value=0.1, value=1.0, step=0.5)
-        
-        submitted = st.form_submit_button("Register", use_container_width=True, type="primary")
-        
-        if submitted:
-            if not all([new_username, new_password, full_name, mobile]):
-                st.error("Please fill all required fields")
-            elif district == "Select" or tehsil == "Select" or village == "Select":
-                st.error("Please select location details above the form")
-            elif len(new_password) < 6:
-                st.error("Password must be at least 6 characters")
-            elif not mobile.isdigit() or len(mobile) != 10:
-                st.error("Please enter valid 10-digit mobile")
+            if district != "Select":
+                tehsils = list(MAHARASHTRA_LOCATIONS[district]["tehsils"].keys())
+                tehsil = st.selectbox("Tehsil*", ["Select"] + tehsils)
             else:
-                success, result = create_user(new_username, new_password, full_name, mobile, 
-                                             email, district, tehsil, village, farm_size, user_type)
-                if success:
-                    st.success("Account created! Please login")
-                    st.balloons()
+                tehsil = st.selectbox("Tehsil*", ["First select district"], disabled=True)
+        with col3:
+            if district != "Select" and tehsil != "Select" and tehsil not in ["First select district"]:
+                villages = MAHARASHTRA_LOCATIONS[district]["tehsils"][tehsil]
+                village = st.selectbox("Village*", ["Select"] + villages)
+            else:
+                village = st.selectbox("Village*", ["First select tehsil"], disabled=True)
+        
+        st.markdown("---")
+        
+        # Now the form with other details
+        with st.form("register_form"):
+            st.markdown("#### Personal & Farm Details")
+            col1, col2 = st.columns(2)
+            with col1:
+                new_username = st.text_input("Username*")
+                new_password = st.text_input("Password* (min 6 chars)", type="password")
+                full_name = st.text_input("Full Name*")
+                mobile = st.text_input("Mobile* (10 digits)")
+            with col2:
+                email = st.text_input("Email")
+                user_type = st.selectbox("I am a", ["Farmer", "Buyer/Trader", "Equipment Provider"])
+                farm_size = st.number_input("Farm Size (Acres)", min_value=0.1, value=1.0, step=0.5)
+            
+            submitted = st.form_submit_button("Register", use_container_width=True, type="primary")
+            
+            if submitted:
+                if not all([new_username, new_password, full_name, mobile]):
+                    st.error("Please fill all required fields")
+                elif district == "Select" or tehsil == "Select" or village == "Select":
+                    st.error("Please select location details above the form")
+                elif len(new_password) < 6:
+                    st.error("Password must be at least 6 characters")
+                elif not mobile.isdigit() or len(mobile) != 10:
+                    st.error("Please enter valid 10-digit mobile")
                 else:
-                    st.error(f"Error: {result}")
+                    success, result = create_user(new_username, new_password, full_name, mobile, 
+                                                email, district, tehsil, village, farm_size, user_type)
+                    if success:
+                        st.success("Account created! Please login")
+                        st.balloons()
+                    else:
+                        st.error(f"Error: {result}")
 
 def show_main_app():
     """Main app with navigation"""
