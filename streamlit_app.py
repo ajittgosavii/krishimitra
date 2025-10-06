@@ -259,58 +259,166 @@ def generate_sample_prices(commodity, district):
 MAHARASHTRA_LOCATIONS = {
     "Pune": {
         "tehsils": {
-            "Pune City": ["Shivajinagar", "Kothrud", "Hadapsar", "Yerawada", "Aundh"],
-            "Haveli": ["Phursungi", "Manjri", "Uruli Kanchan", "Wagholi"],
-            "Mulshi": ["Paud", "Pirangut", "Lavale", "Mulshi"],
-            "Maval": ["Talegaon", "Vadgaon Maval", "Kamshet", "Lonavala"],
-            "Bhor": ["Bhor", "Nasrapur", "Velhe", "Yavat"],
-            "Purandhar": ["Saswad", "Jejuri", "Pargaon", "Narayanpur"],
-            "Baramati": ["Baramati", "Morgaon", "Bhigwan", "Kurkumbh"],
-            "Indapur": ["Indapur", "Bhigwan", "Akluj", "Nimgaon"],
-            "Daund": ["Daund", "Kurkundi", "Yevat", "Patas"],
-            "Shirur": ["Shirur", "Shikrapur", "Kendal", "Pabal"],
-            "Khed": ["Rajgurunagar", "Chakan", "Manchar", "Kusgaon"],
-            "Junnar": ["Junnar", "Narayangaon", "Otur", "Alephata"],
-            "Ambegaon": ["Ghodegaon", "Manchar", "Bhigwan", "Pargaon"]
+            "Pune City": ["Shivajinagar", "Kothrud", "Hadapsar", "Yerawada", "Aundh", "Deccan", "Swargate", "Kasba Peth", "Bibwewadi", "Warje"],
+            "Haveli": ["Phursungi", "Manjri", "Uruli Kanchan", "Wagholi", "Lohegaon", "Undri", "Kondhwa", "Pisoli", "Uttamnagar"],
+            "Mulshi": ["Paud", "Pirangut", "Lavale", "Mulshi", "Tamhini", "Valvan", "Donaje", "Kolwan"],
+            "Maval": ["Talegaon", "Vadgaon Maval", "Kamshet", "Lonavala", "Khandala", "Karla", "Bhaje", "Uksan"],
+            "Bhor": ["Bhor", "Nasrapur", "Yavat", "Khandas", "Sangvi", "Randullabad"],
+            "Velhe": ["Velhe", "Shindawane", "Kenjal", "Garade", "Pabe", "Shirgaon"],
+            "Purandhar": ["Saswad", "Jejuri", "Pargaon", "Narayanpur", "Dive", "Bopdev", "Nimgaon Ketki"],
+            "Baramati": ["Baramati", "Morgaon", "Bhigwan", "Kurkumbh", "Malad", "Supe", "Nira"],
+            "Indapur": ["Indapur", "Akluj", "Nimgaon Ketki", "Bhigwan", "Karkamb", "Walchandnagar"],
+            "Daund": ["Daund", "Kurkundi", "Yevat", "Patas", "Ranjangaon", "Loni Kalbhor", "Supa"],
+            "Shirur": ["Shirur", "Shikrapur", "Kendal", "Pabal", "Talegaon Dhamdhere", "Ranjangaon Ganpati", "Nhavara"],
+            "Khed": ["Rajgurunagar", "Chakan", "Manchar", "Kusgaon", "Alandi", "Ranjangaon", "Kendal"],
+            "Junnar": ["Junnar", "Narayangaon", "Otur", "Alephata", "Manchar", "Wadgaon", "Pimpri"],
+            "Ambegaon": ["Ghodegaon", "Manchar", "Pargaon", "Bhigwan", "Jeur", "Kalamb", "Shirur"]
         }
     },
     "Mumbai Suburban": {
         "tehsils": {
-            "Kurla": ["Kurla East", "Kurla West", "Chunabhatti", "Tilak Nagar"],
-            "Andheri": ["Andheri East", "Andheri West", "Jogeshwari", "Vile Parle"],
-            "Borivali": ["Borivali East", "Borivali West", "Kandivali", "Malad"]
+            "Kurla": ["Kurla East", "Kurla West", "Chunabhatti", "Tilak Nagar", "Ghatkopar", "Chembur"],
+            "Andheri": ["Andheri East", "Andheri West", "Jogeshwari", "Vile Parle", "Santacruz", "Goregaon"],
+            "Borivali": ["Borivali East", "Borivali West", "Kandivali", "Malad", "Dahisar", "Mira Road"]
         }
     },
     "Nagpur": {
         "tehsils": {
-            "Nagpur Urban": ["Dharampeth", "Sadar", "Hingna", "Nandanvan"],
-            "Nagpur Rural": ["Kalmeshwar", "Kamptee", "Ramtek", "Parseoni"],
+            "Nagpur Urban": ["Dharampeth", "Sadar", "Hingna", "Nandanvan", "Civil Lines", "Sitabuldi"],
+            "Nagpur Rural": ["Kalmeshwar", "Kamptee", "Ramtek", "Parseoni", "Mouda", "Kuhi"],
             "Umred": ["Umred", "Khapa", "Bhiwapur", "Kuhi"],
-            "Kalameshwar": ["Kalameshwar", "Mouza", "Parseoni", "Savner"]
+            "Kalameshwar": ["Kalameshwar", "Mouza", "Parseoni", "Savner", "Hinganghat"]
         }
     },
     "Nashik": {
         "tehsils": {
-            "Nashik": ["Nashik Road", "Panchavati", "Satpur", "Deolali"],
-            "Igatpuri": ["Igatpuri", "Ghoti", "Dindori", "Trimbakeshwar"],
-            "Sinnar": ["Sinnar", "Malegaon", "Nandgaon", "Chandwad"],
-            "Niphad": ["Niphad", "Dindori", "Malegaon", "Vani"]
+            "Nashik": ["Nashik Road", "Panchavati", "Satpur", "Deolali", "College Road", "Cidco"],
+            "Igatpuri": ["Igatpuri", "Ghoti", "Trimbakeshwar", "Peth"],
+            "Sinnar": ["Sinnar", "Malegaon", "Nandgaon", "Manmad"],
+            "Niphad": ["Niphad", "Dindori", "Vani"],
+            "Dindori": ["Dindori", "Peth", "Mohadi"],
+            "Kalwan": ["Kalwan", "Satana", "Surgana"],
+            "Yeola": ["Yeola", "Nandgaon"],
+            "Chandwad": ["Chandwad", "Malegaon Camp"],
+            "Surgana": ["Surgana", "Peth", "Trimbak"],
+            "Peint": ["Peint", "Deola"],
+            "Trimbakeshwar": ["Trimbak", "Anjaneri", "Nimon"],
+            "Baglan": ["Satana", "Malegaon", "Kalwan"],
+            "Malegaon": ["Malegaon City", "Malegaon Camp", "Nandgaon"],
+            "Nandgaon": ["Nandgaon", "Vani", "Malegaon"],
+            "Satana": ["Satana", "Dindori", "Kalwan"]
         }
     },
     "Thane": {
         "tehsils": {
-            "Thane": ["Naupada", "Kopri", "Vartak Nagar", "Wagle Estate"],
-            "Kalyan": ["Kalyan East", "Kalyan West", "Dombivli East", "Dombivli West"],
-            "Bhiwandi": ["Bhiwandi", "Kalyan", "Nizampur", "Anjur"],
-            "Shahapur": ["Shahapur", "Asangaon", "Atgaon", "Vashind"]
+            "Thane": ["Naupada", "Kopri", "Vartak Nagar", "Wagle Estate", "Ghodbunder", "Majiwada"],
+            "Kalyan": ["Kalyan East", "Kalyan West", "Dombivli East", "Dombivli West", "Titwala", "Ambernath"],
+            "Bhiwandi": ["Bhiwandi", "Nizampur", "Anjur", "Padgha"],
+            "Shahapur": ["Shahapur", "Asangaon", "Atgaon", "Vashind", "Tokawade"],
+            "Ulhasnagar": ["Ulhasnagar 1", "Ulhasnagar 2", "Ulhasnagar 3", "Ulhasnagar 4", "Ulhasnagar 5"],
+            "Murbad": ["Murbad", "Khardi", "Tokawade"],
+            "Dahanu": ["Dahanu", "Bordi", "Kasa"],
+            "Palghar": ["Palghar", "Vasai", "Virar"],
+            "Jawhar": ["Jawhar", "Mokhada"],
+            "Mokhada": ["Mokhada", "Vikramgad"],
+            "Talasari": ["Talasari", "Dahanu"],
+            "Vikramgad": ["Vikramgad", "Jawhar"],
+            "Vasai": ["Vasai East", "Vasai West", "Nala Sopara"],
+            "Wada": ["Wada", "Vikramgad"]
         }
     },
-    "Aurangabad": {"tehsils": {"Aurangabad": ["Aurangabad City", "Paithan", "Gangapur"]}},
-    "Solapur": {"tehsils": {"Solapur North": ["Solapur City", "Akluj", "Barshi"]}},
-    "Kolhapur": {"tehsils": {"Kolhapur": ["Kolhapur City", "Karveer", "Panhala"]}},
-    "Ahmednagar": {"tehsils": {"Ahmednagar": ["Ahmednagar City", "Nagar", "Sangamner"]}},
-    "Satara": {"tehsils": {"Satara": ["Satara City", "Karad", "Koregaon"]}},
-    "Sangli": {"tehsils": {"Sangli": ["Sangli City", "Miraj", "Tasgaon"]}},
+    "Aurangabad": {
+        "tehsils": {
+            "Aurangabad": ["Aurangabad City", "Paithan", "Gangapur", "Vaijapur"],
+            "Paithan": ["Paithan", "Gangapur", "Phulambri"],
+            "Gangapur": ["Gangapur", "Vaijapur"],
+            "Vaijapur": ["Vaijapur", "Harsul"],
+            "Kannad": ["Kannad", "Phulambri"],
+            "Sillod": ["Sillod", "Phulambri"],
+            "Phulambri": ["Phulambri", "Khultabad"],
+            "Khultabad": ["Khultabad", "Vaijapur"],
+            "Soegaon": ["Soegaon", "Sillod"]
+        }
+    },
+    "Solapur": {
+        "tehsils": {
+            "Solapur North": ["Solapur City", "Barshi", "Karmala"],
+            "Solapur South": ["Solapur South", "Mohol", "Malshiras"],
+            "Barshi": ["Barshi", "Karmala"],
+            "Karmala": ["Karmala", "Madha"],
+            "Madha": ["Madha", "Karmala"],
+            "Mohol": ["Mohol", "Pandharpur"],
+            "Pandharpur": ["Pandharpur", "Malshiras"],
+            "Malshiras": ["Malshiras", "Sangole"],
+            "Sangole": ["Sangole", "Pandharpur"],
+            "Mangalvedhe": ["Mangalvedhe", "Barshi"],
+            "Akkalkot": ["Akkalkot", "Solapur South"]
+        }
+    },
+    "Kolhapur": {
+        "tehsils": {
+            "Kolhapur": ["Kolhapur City", "Karveer", "Panhala", "Hatkanangle"],
+            "Karveer": ["Kolhapur", "Shirol"],
+            "Panhala": ["Panhala", "Shahuwadi"],
+            "Shahuwadi": ["Shahuwadi", "Bavda"],
+            "Hatkanangle": ["Hatkanangle", "Nesari"],
+            "Shirol": ["Shirol", "Kurundwad"],
+            "Radhanagari": ["Radhanagari", "Gaganbawda"],
+            "Kagal": ["Kagal", "Hatkanangle"],
+            "Bhudargad": ["Bhudargad", "Ajra"],
+            "Ajra": ["Ajra", "Gadhinglaj"],
+            "Gadhinglaj": ["Gadhinglaj", "Chandgad"],
+            "Chandgad": ["Chandgad", "Bhudargad"]
+        }
+    },
+    "Ahmednagar": {
+        "tehsils": {
+            "Ahmednagar": ["Ahmednagar City", "Nagar", "Shevgaon"],
+            "Nagar": ["Nagar", "Rahuri"],
+            "Shrigonda": ["Shrigonda", "Parner", "Karjat"],  # HERE IT IS!
+            "Parner": ["Parner", "Shrigonda"],
+            "Sangamner": ["Sangamner", "Akole", "Kopargaon"],
+            "Kopargaon": ["Kopargaon", "Shrirampur"],
+            "Rahuri": ["Rahuri", "Nevasa"],
+            "Nevasa": ["Nevasa", "Pathardi"],
+            "Pathardi": ["Pathardi", "Shrigonda"],
+            "Akole": ["Akole", "Sangamner"],
+            "Shevgaon": ["Shevgaon", "Karjat"],
+            "Karjat": ["Karjat", "Jamkhed"],
+            "Jamkhed": ["Jamkhed", "Karjat"],
+            "Shrirampur": ["Shrirampur", "Kopargaon"],
+            "Rahata": ["Rahata", "Shrirampur"]
+        }
+    },
+    "Satara": {
+        "tehsils": {
+            "Satara": ["Satara City", "Karad", "Koregaon", "Phaltan"],
+            "Karad": ["Karad", "Patan"],
+            "Koregaon": ["Koregaon", "Satara"],
+            "Phaltan": ["Phaltan", "Lonand"],
+            "Wai": ["Wai", "Mahabaleshwar"],
+            "Mahabaleshwar": ["Mahabaleshwar", "Panchgani"],
+            "Patan": ["Patan", "Khandala"],
+            "Khandala": ["Khandala", "Satara"],
+            "Jaoli": ["Jaoli", "Koregaon"],
+            "Khatav": ["Khatav", "Phaltan"],
+            "Maan": ["Maan", "Khatav"]
+        }
+    },
+    "Sangli": {
+        "tehsils": {
+            "Sangli": ["Sangli City", "Miraj", "Tasgaon", "Jat"],
+            "Miraj": ["Miraj", "Kavathe Mahankal"],
+            "Tasgaon": ["Tasgaon", "Kavalapur"],
+            "Jat": ["Jat", "Khanapur"],
+            "Walwa": ["Walwa", "Islampur"],
+            "Khanapur": ["Khanapur", "Atpadi"],
+            "Atpadi": ["Atpadi", "Palus"],
+            "Palus": ["Palus", "Kavalapur"],
+            "Kavalapur": ["Kavalapur", "Tasgaon"],
+            "Shirala": ["Shirala", "Walwa"]
+        }
+    }
 }
 
 # Initialize session state
